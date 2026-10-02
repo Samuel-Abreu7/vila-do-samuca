@@ -1,6 +1,6 @@
 // Nim — jogo antigo; estratégia vencedora descrita por Charles Bouton em 1901.
 // Na sua vez, tire quantos palitos quiser de UMA fileira.
-import { carregarEstilo, escolhas, ler, sortear, esperar, faixa, som, festa, prepararJogo, voar, dicasEmDegraus, repetir, esc, escolhaDaCrianca, guardarEscolha } from "../../util.js";
+import { carregarEstilo, escolhas, ler, sortear, esperar, faixa, som, festa, prepararJogo, voar, dicasEmDegraus, repetir, esc, escolhaDaCrianca, guardarEscolha, visualIlustrado, abrirIlustrado, criarSprites } from "../../util.js";
 import { arte, avatar, icone } from "../../arte.js";
 
 const TAMANHOS = { pequeno: [1, 3, 5], medio: [3, 4, 5], grande: [2, 5, 6, 7] };
@@ -36,6 +36,16 @@ export function jogadaComputador(fileiras, ultimoPerde, forca) {
 
 const SEM_PERFIL = [{ id: "visitante", apelido: "Azul", avatar: "🔵" }, { id: "visitante", apelido: "Vermelho", avatar: "🔴" }];
 
+// ---------- Modelo ilustrado (imagens geradas por IA, assinadas pela vila) ----------
+// Acampamento pintado de noite, palitos de bambu pintados (os de cabeça vermelha lembravam fósforos) e o Tito,
+// o panda da China, que fica feliz quando a criança vence e preocupado, sem bronca, quando perde.
+const IMG = { cenario: new URL("./img/cenario.webp", import.meta.url).href, atlas: new URL("./img/atlas.webp", import.meta.url).href };
+// ATLAS-INICIO (gerado por embutir-atlas.py; não editar à mão)
+const ATLAS = { w: 640, h: 507 };
+const RET = {"tito": [2, 0, 181, 282], "tito-feliz": [192, 0, 227, 280], "tito-preocupado": [425, 0, 175, 280], "bambu": [0, 288, 59, 213], "fogueira": [65, 288, 145, 176]};
+// ATLAS-FIM
+const spr = criarSprites(IMG.atlas, ATLAS.w, ATLAS.h, RET);
+
 export function montar(palco, ctx) {
   carregarEstilo(new URL("./jogo.css", import.meta.url));
   const guiada = ctx?.tutorial || 0;
@@ -49,13 +59,18 @@ export function montar(palco, ctx) {
   let partida = 0;
   let fileiras, vez, marcado, fim, pensando, dicasRestantes, vitorias = [0, 0], lances = [];
   let vivo = true, repetindo = false;
+  // A cena nasce no leve e só troca para o ilustrado se as imagens chegarem em 0,8 s (ver `abrirIlustrado` no util).
+  const querIlustrado = visualIlustrado(ctx, "nim:visual");
+  let ilustrado = false, clima = "contente", dicasIniciais = 0;
+  const htmlTito = () => (ilustrado ? spr(clima === "feliz" ? "tito-feliz" : clima === "preocupado" ? "tito-preocupado" : "tito", 0.33) : arte("tito", 46));
 
   palco.innerHTML = `
     <section class="jg nim">
       ${faixa(arte("nim", 54), "Nim", { ajustes: !guiada })}
       <div class="placar" id="nim-placar"></div>
       <p class="nim-regra" id="nim-regra"></p>
-      <div class="nim-acampamento">
+      <div class="nim-acampamento${querIlustrado ? " carregando" : ""}">
+        <button type="button" class="nim-tito" aria-label="Tito, o panda. Toque para ouvir a história do jogo."></button>
         <div class="nim-mesa" id="nim-mesa" data-teclado=".nim-palito"></div>
         <p class="nim-previa" id="nim-previa" aria-live="polite"></p>
         <span class="nim-fogueira">${arte("fogueira", 64)}</span>
@@ -76,8 +91,14 @@ export function montar(palco, ctx) {
   const ajustes = document.createElement("div");
   ajustes.className = "nim-cfg";
   ajustes.innerHTML = `
+    <div><span class="rotulo">Visual do jogo</span><div id="nim-visual" data-nova-partida></div>
+      <p class="nim-dica-visual">O ilustrado tem desenhos mais ricos e precisa de internet. O leve funciona sem internet e em celular mais simples.</p></div>
     <div><span class="rotulo">Tamanho</span><div id="nim-tam" data-nova-partida></div></div>
     <div><span class="rotulo">Quem tira o último palito</span><div id="nim-fim" data-nova-partida></div></div>`;
+  escolhas(ajustes.querySelector("#nim-visual"), [["ilustrado", "Ilustrado"], ["leve", "Leve"]], querIlustrado ? "ilustrado" : "leve", (v) => {
+    guardarEscolha(ctx, "nim:visual", v);
+    ctx?.reiniciar?.();
+  });
   const jogo = prepararJogo(palco, {
     ctx, ajustes: guiada ? null : ajustes, tutorial: true,
     regras: `<ul>
@@ -136,6 +157,7 @@ export function montar(palco, ctx) {
     vez = guiada ? 0 : ctx?.comeca ?? 0; marcado = null; fim = false; pensando = false;
     const combinadas = ctx?.dicas ?? [0, 0];
     dicasRestantes = samuca ? [Math.max(2, combinadas[0]), 0] : [...combinadas];
+    dicasIniciais = dicasRestantes[0]; clima = "contente";
     lances = [[...fileiras]];
     aviso.textContent = ""; aviso.className = "aviso";
     $("#nim-regra").innerHTML = `<span>Regra desta partida:</span> quem tirar o último palito <b>${cfg.ultimoPerde ? "perde" : "ganha"}</b>.`;
@@ -155,7 +177,7 @@ export function montar(palco, ctx) {
         <span class="nim-palitos">
         ${Array.from({ length: n }, (_, k) => {
           const m = marcado && marcado[0] === i && k >= n - marcado[1];
-          return `<button type="button" class="nim-palito ${m ? "marcado" : ""}" data-i="${i}" data-k="${k}"
+          return `<button type="button" class="nim-palito ${m ? "marcado" : ""}" data-i="${i}" data-k="${k}"${ilustrado ? ` style="${spr.preencher("bambu")}"` : ""}
             aria-label="Palito ${k + 1} da fileira ${i + 1}${m ? ", marcado para tirar" : `. Toque para marcar ${n - k === 1 ? "só este" : `este e os da direita (${n - k})`}`}" ${bloqueado ? "disabled" : ""}></button>`;
         }).join("")}
         ${n === 0 ? `<span class="nim-vazia">vazia</span>` : ""}
@@ -174,6 +196,7 @@ export function montar(palco, ctx) {
     $("#nim-tirar").disabled = !marcado || bloqueado;
     $("#nim-tirar").textContent = marcado ? `Tirar ${marcado[1]} da fileira ${marcado[0] + 1}` : "Tirar";
     $("#nim-nova").disabled = repetindo;
+    $(".nim-tito").innerHTML = htmlTito();
     const botaoAjustes = palco.querySelector('[data-faixa="ajustes"]');
     if (botaoAjustes) botaoAjustes.disabled = repetindo; // trocar o tamanho no meio da repetição misturaria as partidas
     atualizarBotaoDica();
@@ -192,8 +215,10 @@ export function montar(palco, ctx) {
     ctx?.registrarDuelo?.(vencedor);
     const perdeuProSamuca = samuca && vencedor === 1;
     som(perdeuProSamuca ? "derrota" : "vitoria");
+    clima = perdeuProSamuca ? "preocupado" : "feliz";
     if (!perdeuProSamuca) {
       festa();
+      if (!guiada && samuca && dicasRestantes[0] === dicasIniciais) ctx?.conquistar?.("nim-sem-dica", 0);
       if (!guiada && samuca) ctx?.conquistar?.("nim-samuca", 0);
       if (!guiada && cfg.ultimoPerde) ctx?.conquistar?.("nim-perde", vencedor);
     }
@@ -268,6 +293,15 @@ export function montar(palco, ctx) {
       (v) => { cfg.ultimoPerde = v; guardarEscolha(ctx, "nim:ultimoPerde", v); jogo.fecharAjustes(); nova(); });
   }
 
+  $(".nim-tito").hidden = !ctx?.historia;
+  $(".nim-tito").addEventListener("click", () => { som("nota", 1); jogo.abrirHistoria(); });
+  if (querIlustrado) {
+    abrirIlustrado([IMG.cenario, IMG.atlas], {
+      vivo: () => vivo,
+      aplicar: () => { ilustrado = true; $(".nim-acampamento").classList.add("ilustrado"); if (fileiras) desenhar(); },
+      revelar: () => $(".nim-acampamento").classList.remove("carregando"),
+    });
+  }
   setTimeout(() => {
     nova();
     if (guiada === 3) ctx?.dizer?.("Agora tente sozinho: deixe o outro sem boa saída.");

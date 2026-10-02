@@ -1,7 +1,7 @@
 // Raposa, cordeiro e couve — Alcuíno de York, séc. VIII.
 // O barqueiro atravessa o rio levando no máximo um passageiro.
 // Não pode ficar sozinho, sem o barqueiro: raposa com cordeiro, cordeiro com couve.
-import { carregarEstilo, faixa, som, festa, prepararJogo, posicoes, mover, dicasEmDegraus, repetir, semMovimento, fatorLento, escolhaDaCrianca, guardarEscolha, escolhas, modoLeve } from "../../util.js";
+import { carregarEstilo, faixa, som, festa, prepararJogo, posicoes, mover, dicasEmDegraus, repetir, semMovimento, fatorLento, guardarEscolha, escolhas, visualIlustrado, abrirIlustrado, criarSprites } from "../../util.js";
 import { arte, icone } from "../../arte.js";
 
 // nota: grau da escala da música (cada bicho tem a sua nota de piano ao ser tocado).
@@ -56,16 +56,11 @@ export function resolver(lado, barco, ids) {
 // leve (desenhos em código: sem internet e em celular fraco). Cada figura do atlas é uma célula da
 // grade 5×3: [coluna, linha]. Se as imagens não carregarem (sem internet), cai sozinho no leve.
 const IMG = { cenario: new URL("./img/cenario.webp", import.meta.url).href, atlas: new URL("./img/atlas.webp", import.meta.url).href };
-const SPRITE = {
-  raposa: [0, 0], "raposa-feliz": [1, 0], cordeiro: [2, 0], "cordeiro-feliz": [3, 0], "cordeiro-preocupado": [4, 0],
-  couve: [0, 1], "couve-feliz": [1, 1], "couve-preocupada": [2, 1], bento: [3, 1], "barqueiro-acena": [4, 1],
-  "barqueiro-remando": [0, 2], "barco-vazio": [2, 2],
-};
-const spr = (nome, tam, extra = "") => `<span class="spr ${extra}" style="--s:${tam}px;--c:${SPRITE[nome][0]};--l:${SPRITE[nome][1]}" aria-hidden="true"></span>`;
-function carregarImagens() {
-  const baixar = (url) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(true); i.onerror = () => ok(false); i.src = url; });
-  return Promise.race([Promise.all([baixar(IMG.cenario), baixar(IMG.atlas)]).then((r) => r.every(Boolean)), new Promise((ok) => setTimeout(() => ok(false), 4000))]);
-}
+const RET = {"raposa": [0, 0, 216, 216], "raposa-feliz": [216, 0, 216, 216], "cordeiro": [432, 0, 216, 216], "cordeiro-feliz": [648, 0, 216, 216], "cordeiro-preocupado": [864, 0, 216, 216], "couve": [0, 216, 216, 216], "couve-feliz": [216, 216, 216, 216], "couve-preocupada": [432, 216, 216, 216], "bento": [648, 216, 216, 216], "barqueiro-acena": [864, 216, 216, 216], "barqueiro-remando": [0, 432, 432, 216], "barco-vazio": [432, 432, 432, 216]};
+const SPRITE = RET;
+const sprite = criarSprites(IMG.atlas, 1080, 648, RET);
+// tam = tamanho da célula de 216 px na tela; as figuras largas (barco) já têm o retângulo de 2 células
+const spr = (nome, tam, extra = "") => sprite(nome, tam / 216, extra.replace("larga", "").trim());
 
 // ---------- Cenário (desenhos parados, no traço da vila) ----------
 const ARVORE = `<svg class="rp-arvore" viewBox="0 0 60 80" aria-hidden="true"><rect x="26" y="44" width="8" height="30" rx="3" fill="#7a4a24"/>
@@ -109,9 +104,10 @@ export function montar(palco, ctx) {
   let historico = [];
   let problema = null, vitima = null, erros = 0;
   let vivo = true, repetindo = false;
-  // Visual: a escolha da criança vale; sem escolha, ilustrado, menos em celular fraco (modo leve).
-  const escolhaVisual = escolhaDaCrianca(ctx, "raposa:visual");
-  let ilustrado = (escolhaVisual ?? (modoLeve() ? "leve" : "ilustrado")) === "ilustrado";
+  // Visual: a escolha da criança vale; sem escolha, ilustrado, menos em celular fraco (modo leve). A cena nasce
+  // no leve e só troca para o ilustrado se as imagens chegarem em 0,8 s (ver `abrirIlustrado` no util).
+  const querIlustrado = visualIlustrado(ctx, "raposa:visual");
+  let ilustrado = false;
   // figura: sprite no ilustrado; desenho em código no leve (tamanhos: leve, ilustrado)
   const figura = (nome, tamLeve, tamIlu) => (ilustrado && SPRITE[nome] ? spr(nome, tamIlu) : arte(nome, tamLeve));
   const htmlCombinados = () => `<span aria-hidden="true">Sozinhos, não:</span>
@@ -124,7 +120,7 @@ export function montar(palco, ctx) {
       <div class="rp-combinados" role="note" aria-label="Sem o barqueiro, não podem ficar sozinhos: ${PERIGOS.filter((x) => ids.includes(x.a) && ids.includes(x.b)).map((x) => `${artigo[x.a]} com ${artigo[x.b]}`).join("; ")}.">
         ${htmlCombinados()}
       </div>
-      <div class="rp-cena${ilustrado ? " ilustrado carregando" : ""}" data-teclado=".rp-peca">
+      <div class="rp-cena${querIlustrado ? " carregando" : ""}" data-teclado=".rp-peca">
         <div class="rp-margem" data-lado="cima" role="group" aria-label="Margem de partida">
           <span class="rp-placa">Partida</span>${CENARIO_CIMA}
           <button type="button" class="rp-bento" aria-label="Bento, o texugo. Toque para ouvir a história do jogo.">${figura("bento", 46, 58)}</button>
@@ -159,7 +155,7 @@ export function montar(palco, ctx) {
   const ajustes = document.createElement("div");
   ajustes.innerHTML = `<span class="rotulo">Visual do jogo</span><div id="rp-visual" class="escolhas" data-nova-partida></div>
     <p class="rp-dica-visual">O ilustrado tem desenhos mais ricos e precisa de internet. O leve funciona sem internet e em celular mais simples.</p>`;
-  escolhas(ajustes.querySelector("#rp-visual"), [["ilustrado", "Ilustrado"], ["leve", "Leve"]], ilustrado ? "ilustrado" : "leve", (v) => {
+  escolhas(ajustes.querySelector("#rp-visual"), [["ilustrado", "Ilustrado"], ["leve", "Leve"]], querIlustrado ? "ilustrado" : "leve", (v) => {
     guardarEscolha(ctx, "raposa:visual", v);
     ctx?.reiniciar?.();
   });
@@ -405,18 +401,17 @@ export function montar(palco, ctx) {
   });
 
   $(".rp-bento").hidden = !ctx?.historia;
-  if (ilustrado) {
-    carregarImagens().then((ok) => {
-      if (!vivo) return;
-      if (!ok) {
-        // Sem internet (ou lenta): volta sozinho ao modelo leve, sem avisar nem travar.
-        ilustrado = false;
-        cena.classList.remove("ilustrado");
+  if (querIlustrado) {
+    abrirIlustrado([IMG.cenario, IMG.atlas], {
+      vivo: () => vivo,
+      aplicar: () => {
+        ilustrado = true;
+        cena.classList.add("ilustrado");
         palco.querySelector(".rp-combinados").innerHTML = htmlCombinados();
         $(".rp-bento").innerHTML = figura("bento", 46, 58);
         desenhar();
-      }
-      cena.classList.remove("carregando");
+      },
+      revelar: () => cena.classList.remove("carregando"),
     });
   }
   $(".rp-bento").addEventListener("click", () => { som("nota", 1); jogo.abrirHistoria(); });

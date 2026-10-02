@@ -1,6 +1,6 @@
 // Pontos e caixinhas — Édouard Lucas, 1889.
 // Ligue dois pontos vizinhos. Quem fecha uma caixinha ganha o ponto e joga de novo.
-import { carregarEstilo, escolhas, ler, sortear, esperar, faixa, som, festa, prepararJogo, dicasEmDegraus, repetir, esc, escolhaDaCrianca, guardarEscolha } from "../../util.js";
+import { carregarEstilo, escolhas, ler, sortear, esperar, faixa, som, festa, prepararJogo, dicasEmDegraus, repetir, esc, escolhaDaCrianca, guardarEscolha, visualIlustrado, abrirIlustrado, criarSprites } from "../../util.js";
 import { arte, avatar, icone } from "../../arte.js";
 
 const PASSO = 60, MARGEM = 20;
@@ -49,6 +49,27 @@ const FLOR = [
   `<path d="M50 10 L61 38 L90 40 L67 58 L75 88 L50 71 L25 88 L33 58 L10 40 L39 38 Z" fill="#ffb3b6"/><circle cx="50" cy="52" r="12" fill="#ffc83d"/>`,
 ];
 
+// ---------- Modelo ilustrado (imagens geradas por IA, assinadas pela vila) ----------
+// Canteiro pintado de fundo, flores pintadas nas caixinhas (azul redonda e rosa de estrela: a forma também diz
+// de quem é) e o Gui, o galo da França, que reage. O Gui vem do atlas da Torre de Hanói, para ser o mesmo.
+const IMG = {
+  cenario: new URL("./img/cenario.webp", import.meta.url).href,
+  atlas: new URL("./img/atlas.webp", import.meta.url).href,
+  gui: new URL("../hanoi/img/atlas.webp", import.meta.url).href,
+};
+// ATLAS-INICIO (gerado por embutir-atlas.py; não editar à mão)
+const ATLAS = { w: 420, h: 156 };
+const RET = {"flor-azul": [12, 11, 131, 126], "flor-rosa": [166, 12, 132, 129], "ponto": [327, 12, 74, 64]};
+// ATLAS-FIM
+const RET_GUI = {"gui": [0, 0, 149, 259], "gui-feliz": [155, 0, 170, 232], "gui-preocupado": [331, 0, 168, 259]};
+const sprGui = criarSprites(IMG.gui, 640, 514, RET_GUI);
+const FLOR_PINTADA = ["flor-azul", "flor-rosa"];
+// Recorte do atlas dentro de um SVG: um <svg> aninhado com viewBox no retângulo da figura.
+const sprSvg = (nome, x, y, w, h) => {
+  const [rx, ry, rw, rh] = RET[nome];
+  return `<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${rx} ${ry} ${rw} ${rh}" preserveAspectRatio="xMidYMid meet" overflow="hidden"><image href="${IMG.atlas}" width="${ATLAS.w}" height="${ATLAS.h}"/></svg>`;
+};
+
 export function montar(palco, ctx) {
   carregarEstilo(new URL("./jogo.css", import.meta.url));
   const guiada = ctx?.tutorial || 0;
@@ -59,12 +80,23 @@ export function montar(palco, ctx) {
   let partida = 0;
   let feitas, donos, pontos, vez, fim, pensando, dicasRestantes, novas = new Set(), ultimaLinha = null, seguidas = 0, fechouAgora = 0;
   let ordem = [], vivo = true, repetindo = false;
+  // A cena nasce no leve e só troca para o ilustrado se as imagens chegarem em 0,8 s (ver `abrirIlustrado` no util).
+  const querIlustrado = visualIlustrado(ctx, "pontos:visual");
+  let ilustrado = false;
+  // O Gui: contente; feliz quando alguém fecha uma caixinha; preocupado, sem bronca, quando a criança faz o terceiro
+  // lado de uma caixinha podendo ter evitado.
+  let clima = "contente";
+  const entregas = [0, 0]; // terceiros lados evitáveis de cada jogador, nesta partida
+  const htmlGui = () => (ilustrado ? sprGui(clima === "feliz" ? "gui-feliz" : clima === "preocupado" ? "gui-preocupado" : "gui", 0.27) : arte("gui", 46));
 
   palco.innerHTML = `
     <section class="jg pc">
       ${faixa(arte("pontos", 54), "Pontos e caixinhas", { ajustes: !guiada })}
       <div class="placar" id="pc-placar"></div>
-      <div class="pc-tabuleiro"><svg id="pc-svg" role="group" aria-label="Tabuleiro" data-teclado=".pc-alvo"></svg></div>
+      <div class="pc-tabuleiro${querIlustrado ? " carregando" : ""}">
+        <button type="button" class="pc-gui" aria-label="Gui, o galo. Toque para ouvir a história do jogo."></button>
+        <svg id="pc-svg" role="group" aria-label="Tabuleiro" data-teclado=".pc-alvo"></svg>
+      </div>
       <p class="aviso" id="pc-aviso" role="status" aria-live="polite"></p>
       <div class="acoes">
         <button type="button" class="botao dourado" id="pc-dica"></button>
@@ -80,7 +112,13 @@ export function montar(palco, ctx) {
   const humano = (k) => !jogadores[k].samuca;
 
   const ajustes = document.createElement("div");
-  ajustes.innerHTML = `<span class="rotulo">Tamanho do jardim</span><div id="pc-tam" data-nova-partida></div>`;
+  ajustes.innerHTML = `<span class="rotulo">Visual do jogo</span><div id="pc-visual" data-nova-partida></div>
+    <p class="pc-dica-visual">O ilustrado tem desenhos mais ricos e precisa de internet. O leve funciona sem internet e em celular mais simples.</p>
+    <span class="rotulo">Tamanho do jardim</span><div id="pc-tam" data-nova-partida></div>`;
+  escolhas(ajustes.querySelector("#pc-visual"), [["ilustrado", "Ilustrado"], ["leve", "Leve"]], querIlustrado ? "ilustrado" : "leve", (v) => {
+    guardarEscolha(ctx, "pontos:visual", v);
+    ctx?.reiniciar?.();
+  });
   const jogo = prepararJogo(palco, {
     ctx, ajustes: guiada ? null : ajustes, tutorial: true,
     regras: `<ul>
@@ -129,7 +167,7 @@ export function montar(palco, ctx) {
     feitas = new Map(); // chave -> jogador que traçou
     donos = new Map();  // "r-c" -> jogador
     pontos = [0, 0]; vez = guiada ? 0 : ctx?.comeca ?? 0; fim = false; pensando = false; ultimaLinha = null; seguidas = 0; fechouAgora = 0;
-    ordem = [];
+    ordem = []; clima = "contente"; entregas[0] = entregas[1] = 0;
     const combinadas = ctx?.dicas ?? [0, 0];
     dicasRestantes = samuca ? [Math.max(2, combinadas[0]), 0] : [...combinadas];
     desenhar();
@@ -150,7 +188,9 @@ export function montar(palco, ctx) {
     for (const [k, j] of donos) {
       const [r, c] = k.split("-").map(Number);
       h += `<rect class="pc-caixa dono${j} ${novas.has(k) ? "nova" : ""}" x="${x(c) + 3}" y="${y(r) + 3}" width="${PASSO - 6}" height="${PASSO - 6}" rx="6" role="img" aria-label="Caixinha da fileira ${r + 1}, coluna ${c + 1}: de ${nome(j)}"/>
-            <g class="pc-flor ${novas.has(k) ? "nova" : ""}" transform="translate(${x(c) + 12} ${y(r) + 12}) scale(.36)">${FLOR[j]}</g>`;
+            ${ilustrado
+              ? `<g class="pc-flor ${novas.has(k) ? "nova" : ""}" transform="translate(${x(c) + 8} ${y(r) + 8})">${sprSvg(FLOR_PINTADA[j], 0, 0, PASSO - 16, PASSO - 16)}</g>`
+              : `<g class="pc-flor ${novas.has(k) ? "nova" : ""}" transform="translate(${x(c) + 12} ${y(r) + 12}) scale(.36)">${FLOR[j]}</g>`}`;
     }
     for (const l of todasLinhas(n)) {
       const k = chave(l);
@@ -169,12 +209,15 @@ export function montar(palco, ctx) {
               ${podeTocar ? `<polygon class="pc-alvo" points="${alvo}" data-k="${k}" tabindex="0" role="button" aria-label="${l.t === "h" ? `Linha deitada na fileira ${l.r + 1}, entre os pontos ${l.c + 1} e ${l.c + 2}` : `Linha em pé na coluna ${l.c + 1}, entre as fileiras ${l.r + 1} e ${l.r + 2}`}"/>` : ""}</g>`;
       }
     }
-    for (let r = 0; r <= n; r++) for (let c = 0; c <= n; c++) h += `<circle class="pc-ponto" cx="${x(c)}" cy="${y(r)}" r="6"/>`;
+    for (let r = 0; r <= n; r++) for (let c = 0; c <= n; c++) {
+      h += ilustrado ? sprSvg("ponto", x(c) - 8, y(r) - 7, 16, 14) : `<circle class="pc-ponto" cx="${x(c)}" cy="${y(r)}" r="6"/>`;
+    }
     svg.innerHTML = h;
 
     $("#pc-placar").innerHTML = [0, 1].map((k) => `
       <div class="j${k + 1} ${vez === k && !fim ? "vez" : ""}"><span>${avatar(jogadores[k].avatar, 30)} ${nome(k)}</span><span>${pontos[k]}</span></div>`).join("");
     $("#pc-nova").disabled = repetindo;
+    $(".pc-gui").innerHTML = htmlGui();
     const botaoAjustes = palco.querySelector('[data-faixa="ajustes"]');
     if (botaoAjustes) botaoAjustes.disabled = repetindo; // trocar o tamanho no meio da repetição misturaria os jardins
     atualizarBotaoDica();
@@ -190,6 +233,7 @@ export function montar(palco, ctx) {
         aviso.textContent = pensando ? `${apelido(vez)} está pensando…`
           : fechouAgora ? `${apelido(vez)} fechou ${fechouAgora > 1 ? `${fechouAgora} caixinhas` : "uma caixinha"} e joga de novo.`
           : `Vez de ${apelido(vez)}.`;
+        if (clima === "preocupado") aviso.textContent += " Hmm, esse foi o terceiro lado de uma caixinha. Tudo bem, assim se aprende!";
       }
     }
     dicas.reaplicar();
@@ -204,6 +248,8 @@ export function montar(palco, ctx) {
     const perdeuProSamuca = samuca && vencedor === 1;
     setTimeout(() => som(perdeuProSamuca ? "derrota" : "vitoria"), 200);
     if (vencedor !== null && !perdeuProSamuca) { festa(); if (!guiada && samuca) ctx?.conquistar?.("pontos-samuca", 0); }
+    if (vencedor !== null) clima = "feliz";
+    if (!guiada) [0, 1].forEach((k) => { if (humano(k) && entregas[k] === 0) ctx?.conquistar?.("pontos-cuidado", k); });
     if (samuca && !guiada) ctx.fala(vencedor === 1 ? "ganhei" : "perdi");
   }
 
@@ -221,6 +267,15 @@ export function montar(palco, ctx) {
   function tracar(k, { aplicar = true } = {}) {
     if (feitas.has(k) || (fim && aplicar)) return;
     const l = linhaDeChave(k);
+    // Terceiro lado evitável: a jogada deixa uma caixinha com três lados (a vizinha já tinha dois) quando existia
+    // outra linha livre que não deixava nenhuma assim. Só conta para quem joga (nunca para o Samuca) e fora da repetição.
+    let entregou = false;
+    if (aplicar && humano(vez)) {
+      const dois = (la) => caixasVizinhas(la, cfg.n).some(([r, c]) => contarLados(feitas, r, c) === 2);
+      const fechariaAlguma = caixasVizinhas(l, cfg.n).some(([r, c]) => contarLados(feitas, r, c) === 3);
+      entregou = !fechariaAlguma && dois(l) && todasLinhas(cfg.n).some((la) => !feitas.has(chave(la)) && !dois(la) && !caixasVizinhas(la, cfg.n).some(([r, c]) => contarLados(feitas, r, c) === 3));
+      if (entregou) entregas[vez] += 1;
+    }
     feitas.set(k, vez);
     ultimaLinha = k;
     let fechou = 0;
@@ -230,6 +285,7 @@ export function montar(palco, ctx) {
     }
     pontos[vez] += fechou;
     if (!aplicar) { if (!fechou) vez = 1 - vez; return; }
+    if (humano(vez)) clima = fechou ? "feliz" : entregou ? "preocupado" : "contente";
     fechouAgora = fechou;
     ordem.push(k);
     som(fechou ? "ponto" : "toque");
@@ -272,6 +328,15 @@ export function montar(palco, ctx) {
       (v) => { cfg.n = v; guardarEscolha(ctx, "pontos:n", v); jogo.fecharAjustes(); nova(); });
   }
 
+  $(".pc-gui").hidden = !ctx?.historia;
+  $(".pc-gui").addEventListener("click", () => { som("nota", 1); jogo.abrirHistoria(); });
+  if (querIlustrado) {
+    abrirIlustrado([IMG.cenario, IMG.atlas, IMG.gui], {
+      vivo: () => vivo,
+      aplicar: () => { ilustrado = true; $(".pc-tabuleiro").classList.add("ilustrado"); if (feitas) desenhar(); },
+      revelar: () => $(".pc-tabuleiro").classList.remove("carregando"),
+    });
+  }
   setTimeout(() => {
     nova();
     if (guiada === 3) ctx?.dizer?.("Agora tente sozinho. Cuidado com o terceiro lado!");

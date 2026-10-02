@@ -1,6 +1,6 @@
 // Elevador de botões: só dois botões (sobe X, desce Y). Chegue ao andar pedido.
 // Algumas fases são impossíveis de propósito; a criança pode dizer "não dá".
-import { carregarEstilo, ler, escolhaDaCrianca, guardarEscolha, escolhas, visualIlustrado, carregarImagens, faixa, som, festa, prepararJogo, posicoes, mover, dicasEmDegraus, repetir } from "../../util.js";
+import { carregarEstilo, ler, escolhaDaCrianca, guardarEscolha, escolhas, visualIlustrado, abrirIlustrado, criarSprites, faixa, som, festa, prepararJogo, posicoes, mover, dicasEmDegraus, repetir } from "../../util.js";
 import { arte, icone } from "../../arte.js";
 
 const FASES = [
@@ -78,10 +78,7 @@ const CABINE = `<svg viewBox="0 0 44 36" width="44" height="36" aria-hidden="tru
 const IMG = { cenario: new URL("./img/cenario.webp", import.meta.url).href, atlas: new URL("./img/atlas.webp", import.meta.url).href };
 const ATLAS = { w: 864, h: 432 };
 const RET = {"cabine": [33, 4, 149, 208], "cabine-feliz": [255, 4, 137, 196], "cabine-preocupada": [471, 4, 138, 202], "tome": [697, 16, 118, 183], "janela": [50, 249, 116, 150], "janela-acesa": [269, 239, 109, 170], "bandeira": [489, 252, 101, 144], "porta": [691, 234, 133, 180]};
-const spr = (nome, k) => {
-  const [x, y, w, h] = RET[nome];
-  return `<span class="spr" style="width:${(w * k).toFixed(1)}px;height:${(h * k).toFixed(1)}px;background-size:${(ATLAS.w * k).toFixed(1)}px ${(ATLAS.h * k).toFixed(1)}px;background-position:${(-x * k).toFixed(1)}px ${(-y * k).toFixed(1)}px" aria-hidden="true"></span>`;
-};
+const spr = criarSprites(IMG.atlas, ATLAS.w, ATLAS.h, RET);
 
 // Dificuldade de cada fase na mesma escala do nível das crianças.
 export const dificuldade = (f) => { const m = menorCaminho(f); return m === null ? 1150 : 600 + 65 * m; };
@@ -95,7 +92,9 @@ export function montar(palco, ctx) {
   const escolhida = guiada ? null : escolhaDaCrianca(ctx, "elevador:fase");
   let fase = guiada ? 0 : escolhida !== null ? Math.min(escolhida, FASES.length - 1) : sugerida >= 0 ? sugerida : 0;
   let andar, apertos, fim, historico, vivo = true, repetindo = false;
-  let ilustrado = visualIlustrado(ctx, "elevador:visual");
+  // A cena nasce no leve e só troca para o ilustrado se as imagens chegarem em 0,8 s (ver `abrirIlustrado` no util).
+  const querIlustrado = visualIlustrado(ctx, "elevador:visual");
+  let ilustrado = false;
   // Passageira (a raposa): contente, feliz ao chegar, preocupada (nunca com medo) quando a criança aperta
   // "Não dá!" numa fase que tem jeito, ou se ficar sem saída. Volta a ficar contente no próximo toque.
   let duvida = false;
@@ -110,7 +109,7 @@ export function montar(palco, ctx) {
       ${faixa(arte("elevador", 54), "Elevador de botões", { ajustes: !guiada })}
       <p class="el-fase-atual" id="el-fase-atual"></p>
       <p class="el-rota" id="el-rota"></p>
-      <div class="el-cena${ilustrado ? " ilustrado carregando" : ""}">
+      <div class="el-cena${querIlustrado ? " carregando" : ""}">
         <button type="button" class="el-tome" aria-label="Tomé, o bisão. Toque para ouvir a história do jogo.">${botaoTome()}</button>
         <div class="el-corpo">
           <div class="el-predio-moldura"><ol class="el-predio" id="el-predio" aria-label="Prédio"></ol></div>
@@ -136,7 +135,7 @@ export function montar(palco, ctx) {
   ajustes.innerHTML = `<span class="rotulo">Visual do jogo</span><div id="el-visual" class="escolhas" data-nova-partida></div>
     <p class="el-dica-visual">O ilustrado tem desenhos mais ricos e precisa de internet. O leve funciona sem internet e em celular mais simples.</p>
     <span class="rotulo">Escolher fase</span><div id="el-fases" class="escolhas el-fases" data-nova-partida></div>`;
-  escolhas(ajustes.querySelector("#el-visual"), [["ilustrado", "Ilustrado"], ["leve", "Leve"]], ilustrado ? "ilustrado" : "leve", (v) => {
+  escolhas(ajustes.querySelector("#el-visual"), [["ilustrado", "Ilustrado"], ["leve", "Leve"]], querIlustrado ? "ilustrado" : "leve", (v) => {
     guardarEscolha(ctx, "elevador:visual", v);
     ctx?.reiniciar?.();
   });
@@ -350,17 +349,16 @@ export function montar(palco, ctx) {
 
   $(".el-tome").hidden = !ctx?.historia;
   $(".el-tome").addEventListener("click", () => { som("nota", 1); jogo.abrirHistoria(); });
-  if (ilustrado) {
-    carregarImagens([IMG.cenario, IMG.atlas]).then((ok) => {
-      if (!vivo) return;
-      if (!ok) {
-        // Sem internet (ou lenta): volta sozinho ao modelo leve, sem avisar nem travar.
-        ilustrado = false;
-        $(".el-cena").classList.remove("ilustrado");
+  if (querIlustrado) {
+    abrirIlustrado([IMG.cenario, IMG.atlas], {
+      vivo: () => vivo,
+      aplicar: () => {
+        ilustrado = true;
+        $(".el-cena").classList.add("ilustrado");
         $(".el-tome").innerHTML = botaoTome();
         desenhar();
-      }
-      $(".el-cena").classList.remove("carregando");
+      },
+      revelar: () => $(".el-cena").classList.remove("carregando"),
     });
   }
   iniciar(fase);

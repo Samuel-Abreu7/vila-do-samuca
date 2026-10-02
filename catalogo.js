@@ -31,12 +31,15 @@ export const CONQUISTAS = [
   { id: "elevador-direto", jogo: "elevador", nome: "Direto ao andar", como: "Chegar com o menor número de apertos, sem pedir dica." },
   { id: "elevador-topo", jogo: "elevador", nome: "Até o último andar", como: "Resolver a fase 12 do elevador." },
   { id: "hanoi-5", jogo: "hanoi", nome: "Torre de cinco", como: "Montar a torre com 5 discos." },
+  { id: "hanoi-minimo", jogo: "hanoi", nome: "Passo certo", como: "Montar a torre no menor número de movimentos, sem pedir dica." },
   { id: "hanoi-7", jogo: "hanoi", nome: "Mestre da torre", como: "Montar a torre com 7 discos." },
+  { id: "nim-sem-dica", jogo: "nim", nome: "Pensou sozinho", como: "Vencer o Samuca sem pedir dica." },
   { id: "nim-samuca", jogo: "nim", nome: "Venceu a coruja", como: "Ganhar do Samuca no Nim." },
   { id: "nim-perde", jogo: "nim", nome: "Pensou ao contrário", como: "Ganhar no Nim com a regra \"quem tira o último perde\"." },
   { id: "pontos-samuca", jogo: "pontos", nome: "Dono do jardim", como: "Ganhar do Samuca em Pontos e caixinhas." },
   { id: "colmeia-certeira", jogo: "colmeia", nome: "Abelha certeira", como: "Resolver uma colmeia sem nenhum engano." },
   { id: "colmeia-gigante", jogo: "colmeia", nome: "Colmeia gigante", como: "Resolver a colmeia gigante." },
+  { id: "pontos-cuidado", jogo: "pontos", nome: "Sem entregar", como: "Terminar uma partida sem fazer o terceiro lado de uma caixinha quando havia outra jogada segura." },
   { id: "pontos-tres", jogo: "pontos", nome: "Três de uma vez", como: "Fechar 3 caixinhas na mesma vez de jogar." },
   { id: "enigma-caso", jogo: "enigma", nome: "Caso resolvido", como: "Desvendar um enigma de lógica sem nenhum engano." },
   { id: "senha-cofre", jogo: "senha", nome: "Cofre aberto", como: "Abrir um cofre de 4 frutas." },
@@ -117,7 +120,22 @@ export const JOGOS = [
     objetivo: "Leve a torre inteira para o pino da direita, um disco por vez.",
     direito: "dp", // domínio público: Édouard Lucas, 1883
     interesses: ["planejar", "espaco"],
-    curiosidade: "O francês Édouard Lucas inventou a Torre em 1883 e contou a lenda de monges que moveriam 64 discos. Com 64 discos seriam mais de 18 quintilhões de movimentos: nenhuma vida inteira daria conta!",
+    curiosidade: "O francês Édouard Lucas inventou a Torre em 1883 e criou ele mesmo a lenda de monges que moveriam 64 discos de ouro. A lenda é de mentirinha, mas a conta é de verdade: com 64 discos seriam mais de 18 quintilhões de movimentos, e nenhuma vida inteira daria conta!",
+    // História narrada pelo Gui (texto conferido em fonte em 02/10/2026: Wikipédia "Tower of Hanoi" e "Édouard Lucas",
+    // MacTutor St Andrews). A lenda do templo foi inventada pelo próprio Lucas; o fim do mundo, que faz parte dela,
+    // ficou de fora, para não assustar os pequenos.
+    historia: {
+      anfitriao: "gui", quem: "Gui, o galo", titulo: "A lenda que o Lucas inventou", convite: "A história do Gui", audio: "jogos/hanoi/historia.mp3",
+      paginas: [
+        "Oi! Eu sou o Gui, um galo da França. Lá tem muitos mestres da matemática, e eu adoro brincar com os jogos deles.",
+        "Em mil oitocentos e oitenta e três, um matemático francês chamado Édouard Lucas inventou este brinquedo: a Torre de Hanói.",
+        "Ele queria que o jogo parecesse mágico. Por isso, assinou com um nome de mentirinha, N. Claus de Siam, que é o nome dele embaralhado.",
+        "E contou uma lenda: num templo distante, monges movem sessenta e quatro discos de ouro, um de cada vez, sem pôr disco grande em cima de pequeno.",
+        "Essa lenda foi inventada pelo próprio Lucas, mas a conta é de verdade: com sessenta e quatro discos, seriam mais de dezoito quintilhões de movimentos. Nenhuma vida inteira daria conta!",
+        "Com poucos discos é bem mais fácil. Cada disco a mais dobra o trabalho, mais um movimento. Vamos começar com calma?",
+      ],
+    },
+    proximo: "pontos", proximoConvite: "Quer jogar outro jogo do Lucas?",
     paises: ["França"],
     segredo: ["Olhe primeiro para o disco maior: ele só consegue ir para o pino da direita quando todos os outros estiverem juntos no pino do meio.", "Então o problema grande vira um menor: levar a torre de cima para o meio. E esse, de novo, vira um menor ainda.", "O menor disco se move a cada duas jogadas, sempre girando no mesmo sentido.", "Cada disco a mais dobra o trabalho, mais um: 3 discos são 7 movimentos, 4 são 15, 5 são 31."],
     treina: "Dividir um problema grande em partes menores e enxergar padrões.",
@@ -137,6 +155,20 @@ export const JOGOS = [
     direito: "dp", // domínio público: jogo antigo; teoria de Bouton, 1901
     interesses: ["duelo", "numeros"],
     curiosidade: "Em 1951, numa exposição na Inglaterra, uma máquina chamada Nimrod jogava Nim contra o público. Foi um dos primeiros computadores construídos para jogar.",
+    // História narrada pelo Tito (texto conferido em fonte em 02/10/2026: Wikipédia "Nim" e "Charles L. Bouton",
+    // "Nimrod (computer)"). A origem chinesa é só uma possibilidade; o texto diz isso.
+    historia: {
+      anfitriao: "tito", quem: "Tito, o panda", titulo: "O jogo dos palitos", convite: "A história do Tito", audio: "jogos/nim/historia.mp3",
+      paginas: [
+        "Oi! Eu sou o Tito, um panda da China. Eu adoro bambu e adoro jogos de pensar.",
+        "Este jogo se chama Nim, e é muito antigo. Algumas pessoas acham que ele veio da China, de uma brincadeira de tirar pedrinhas, mas ninguém tem certeza.",
+        "Em mil novecentos e um, um professor americano chamado Charles Bouton descobriu como sempre ganhar. Foi ele quem deu ao jogo o nome Nim.",
+        "Dizem que Nim vem de uma palavra alemã que quer dizer tire. Combina, não é? No jogo, a gente tira palitos.",
+        "Em mil novecentos e cinquenta e um, numa feira na Inglaterra, uma máquina chamada Nimrod jogava Nim contra as pessoas. Foi um dos primeiros computadores feitos para jogar.",
+        "Aqui na vila, os palitos viram bambu. Será que você descobre o jeito de sempre ganhar? Pense com calma.",
+      ],
+    },
+    proximo: "pontos", proximoConvite: "Quer jogar Pontos e caixinhas?",
     paises: ["China"],
     segredo: ["Com duas fileiras iguais, quem joga depois pode sempre copiar: o que o outro tirar de uma, você tira da outra.", "Com mais fileiras, o truque é deixar tudo \"em pares\" para o outro. Os mais velhos podem aprender a conta secreta: somar em binário sem \"vai um\".", "Na regra \"quem tira o último perde\", joga-se igual até o fim, e só na última hora você muda o plano."],
     treina: "Pensar no que o outro vai fazer e descobrir uma estratégia que sempre vence.",
@@ -155,7 +187,20 @@ export const JOGOS = [
     objetivo: "Ligue dois pontos vizinhos. Fechou uma caixinha? Ela é sua e você joga de novo.",
     direito: "dp", // domínio público: Édouard Lucas, 1889
     interesses: ["duelo", "espaco"],
-    curiosidade: "Pontos e caixinhas foi descrito em 1889 por Édouard Lucas, o mesmo matemático francês que inventou a Torre de Hanói.",
+    curiosidade: "Pontos e caixinhas foi descrito em 1889 por Édouard Lucas, o mesmo matemático francês que inventou a Torre de Hanói. Ele chamava o jogo de pipopipette, e ele ganhou muitos outros nomes pelo mundo.",
+    // História narrada pelo Gui (texto conferido em fonte em 02/10/2026: Wikipédia "Dots and boxes" e "Édouard Lucas").
+    historia: {
+      anfitriao: "gui", quem: "Gui, o galo", titulo: "O jogo de papel e lápis", convite: "A história do Gui", audio: "jogos/pontos/historia.mp3",
+      paginas: [
+        "Oi de novo! Eu sou o Gui, o galo da França. Hoje vou contar a história de outro jogo do Édouard Lucas.",
+        "Em mil oitocentos e oitenta e nove, ele escreveu sobre um jogo de papel e lápis que chamou de pipopipette. É um nome que parece de brincadeira, não é?",
+        "Para jogar, só precisa de uma folha cheia de pontos e de um lápis. Cada pessoa liga dois pontos vizinhos, uma linha por vez.",
+        "Quando alguém fecha uma caixinha, ela fica sendo dessa pessoa, que joga de novo.",
+        "O segredo é não fazer o terceiro lado de uma caixinha. Se fizer, o outro fecha a caixinha e leva o ponto.",
+        "O jogo ficou tão popular que ganhou muitos nomes pelo mundo. Aqui na vila, as caixinhas viram canteiros de flores. Boa partida!",
+      ],
+    },
+    proximo: "nim", proximoConvite: "Quer um duelo de palitos?",
     paises: ["França"],
     segredo: ["Nunca faça o terceiro lado de uma caixinha: ele entrega o ponto para o outro.", "No fim, sobram corredores de caixinhas. Quem precisar abrir um corredor entrega todas as caixinhas dele.", "Às vezes vale sacrificar duas caixinhas para obrigar o outro a abrir um corredor maior."],
     treina: "Antecipar consequências e evitar armadilhas.",

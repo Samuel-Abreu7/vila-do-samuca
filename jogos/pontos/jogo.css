@@ -25,3 +25,20 @@
   .pc-flor.nova { animation: florescer .45s cubic-bezier(.2, 1.5, .4, 1); transform-box: fill-box; transform-origin: center; }
   @keyframes florescer { from { opacity: 0; scale: .2; } }
 }
+
+/* ---------- Modelo ilustrado (02/10/2026) ----------
+   Canteiro pintado (terra clara numa moldura de tábuas, gramado em volta). O tabuleiro fica sobre a terra: o
+   preenchimento em % deixa a caixa quadrada, com o SVG ocupando só a faixa de terra. O Gui (galo) fica no canto
+   de cima e reage às jogadas. Nada se mexe sozinho. */
+.pc-tabuleiro { position: relative; }
+.pc-tabuleiro.carregando { opacity: 0; }
+.pc-gui { position: absolute; right: 6px; top: 6px; z-index: 5; min-width: 58px; min-height: 76px; padding: 2px 4px; border: 0; border-radius: 16px; cursor: pointer;
+  display: grid; place-items: center; background: rgba(255,255,255,.6); }
+.pc-gui:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+.pc-gui:active { translate: 0 2px; }
+.pc-tabuleiro.ilustrado { background: #6fb85a url("img/cenario.webp") center / 100% 100% no-repeat; padding: 20.5% 20.5%; box-shadow: 0 6px 0 var(--sombra); }
+.pc-tabuleiro.ilustrado .pc-guia { stroke: rgba(70, 40, 10, .35); }
+.pc-tabuleiro.ilustrado .pc-candidata { stroke: #fff6c8; }
+.pc-tabuleiro.ilustrado .pc-caixa.dono0 { fill: rgba(159, 211, 255, .35); stroke: #2f7fd1; }
+.pc-tabuleiro.ilustrado .pc-caixa.dono1 { fill: rgba(255, 179, 182, .35); stroke: #d9464c; }
+.pc-dica-visual { margin: 8px 0 12px; color: var(--apagado); font-size: .9rem; }

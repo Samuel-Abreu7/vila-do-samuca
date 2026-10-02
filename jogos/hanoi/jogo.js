@@ -1,6 +1,6 @@
 // Torre de Hanói — Édouard Lucas, 1883.
 // Toque num pino para pegar o disco de cima; toque em outro para soltar.
-import { carregarEstilo, escolhas, ler, escolhaDaCrianca, guardarEscolha, faixa, som, festa, prepararJogo, posicoes, mover, dicasEmDegraus, repetir } from "../../util.js";
+import { carregarEstilo, escolhas, ler, escolhaDaCrianca, guardarEscolha, visualIlustrado, abrirIlustrado, criarSprites, faixa, som, festa, prepararJogo, posicoes, mover, dicasEmDegraus, repetir } from "../../util.js";
 import { arte, icone } from "../../arte.js";
 
 const CORES = ["#ff5b61", "#ff9a3c", "#ffc83d", "#3bd67f", "#2fd1c4", "#3aa6ff", "#a879ff"];
@@ -8,6 +8,16 @@ const DIFICULDADE = { 2: 500, 3: 650, 4: 850, 5: 1050, 6: 1250, 7: 1450 };
 const NOME_PINO = ["da esquerda", "do meio", "da direita"];
 const NOME_COR = ["vermelho", "laranja", "amarelo", "verde", "verde-água", "azul", "roxo"];
 const PLACA = ["Partida", "", "Chegada"];
+
+// ---------- Modelo ilustrado (imagens geradas por IA, assinadas pela vila) ----------
+// Cenário pintado (pátio de jardim), o Gui (galo da França) como companheiro de cena e anfitrião, e a haste
+// pintada. Os discos continuam em CSS (o tamanho muda com a quantidade). Duas versões à escolha: ilustrada e leve.
+const IMG = { cenario: new URL("./img/cenario.webp", import.meta.url).href, atlas: new URL("./img/atlas.webp", import.meta.url).href };
+// ATLAS-INICIO (gerado por embutir-atlas.py; não editar à mão)
+const ATLAS = { w: 640, h: 514 };
+const RET = {"gui": [0, 0, 149, 259], "gui-feliz": [155, 0, 170, 232], "gui-preocupado": [331, 0, 168, 259], "poste": [505, 0, 45, 228], "bandeira": [0, 265, 146, 243]};
+// ATLAS-FIM
+const spr = criarSprites(IMG.atlas, ATLAS.w, ATLAS.h, RET);
 // Fases guiadas: 1) 2 discos com guia; 2) 3 discos com guia; 3) 3 discos sozinho.
 const GUIADAS = { 1: 2, 2: 3, 3: 3 };
 
@@ -33,11 +43,18 @@ export function montar(palco, ctx) {
   // Quantos discos a criança escolheu vale até ela escolher outro; sem escolha, vale a sugestão do nível.
   let discos = guiada ? GUIADAS[guiada] : escolhaDaCrianca(ctx, "hanoi:discos") ?? sugerido ?? ler("hanoi:discos", 3);
   let pinos, pego, movimentos, historico, vivo = true, repetindo = false;
+  // A cena nasce no leve e só troca para o ilustrado se as imagens chegarem em 0,8 s (ver `abrirIlustrado` no util).
+  const querIlustrado = visualIlustrado(ctx, "hanoi:visual");
+  let ilustrado = false;
+  // O Gui reage: contente, feliz quando a torre fica pronta, preocupado (nunca com medo) se o disco não cabe.
+  let clima = "contente";
+  const htmlGui = () => (ilustrado ? spr(clima === "feliz" ? "gui-feliz" : clima === "preocupado" ? "gui-preocupado" : "gui", 0.34) : arte("gui", 46));
 
   palco.innerHTML = `
     <section class="jg th">
       ${faixa(arte("hanoi", 54), "Torre de Hanói", { ajustes: !guiada })}
-      <div class="th-templo">
+      <div class="th-templo${querIlustrado ? " carregando" : ""}">
+        <button type="button" class="th-gui" aria-label="Gui, o galo. Toque para ouvir a história do jogo."></button>
         <div class="th-base" id="th-base" data-teclado=".th-pino"></div>
         <div class="th-placas" aria-hidden="true">${PLACA.map((t, i) => `<span>${t ? `${i === 2 ? arte("bandeira", 18) : ""}${t}` : ""}</span>`).join("")}</div>
       </div>
@@ -54,7 +71,13 @@ export function montar(palco, ctx) {
   const $ = (s) => palco.querySelector(s);
   const aviso = $("#th-aviso");
   const ajustes = document.createElement("div");
-  ajustes.innerHTML = `<span class="rotulo">Quantos discos</span><div id="th-qtd" data-nova-partida></div>`;
+  ajustes.innerHTML = `<span class="rotulo">Visual do jogo</span><div id="th-visual" data-nova-partida></div>
+    <p class="th-dica-visual">O ilustrado tem desenhos mais ricos e precisa de internet. O leve funciona sem internet e em celular mais simples.</p>
+    <span class="rotulo">Quantos discos</span><div id="th-qtd" data-nova-partida></div>`;
+  escolhas(ajustes.querySelector("#th-visual"), [["ilustrado", "Ilustrado"], ["leve", "Leve"]], querIlustrado ? "ilustrado" : "leve", (v) => {
+    guardarEscolha(ctx, "hanoi:visual", v);
+    ctx?.reiniciar?.();
+  });
   const jogo = prepararJogo(palco, {
     ctx, ajustes: guiada ? null : ajustes, tutorial: true,
     regras: `<ul>
@@ -98,7 +121,7 @@ export function montar(palco, ctx) {
 
   function iniciar() {
     pinos = [Array.from({ length: discos }, (_, i) => discos - i), [], []];
-    pego = null; movimentos = 0; historico = [];
+    pego = null; movimentos = 0; historico = []; clima = "contente";
     aviso.textContent = ""; aviso.className = "aviso";
     desenhar();
   }
@@ -122,10 +145,11 @@ export function montar(palco, ctx) {
     base.innerHTML = pinos.map((p, i) => `
       <button type="button" class="th-pino ${pego === i ? "pego" : ""} ${pego !== null && pego !== i ? (cabe(i) ? "pode" : "nao-pode") : ""}" data-i="${i}"
         aria-label="${rotuloPino(p, i)}" ${venceu() || repetindo ? "disabled" : ""}>
-        <span class="th-haste"></span>
+        <span class="th-haste${ilustrado ? " poste" : ""}"${ilustrado ? ` style="${spr.preencher("poste")}"` : ""}></span>
         ${p.map((d, k) => `<span class="th-disco ${pego === i && k === p.length - 1 ? "no-ar" : ""}"
           data-peca="d${d}" style="width:${30 + (d / Math.max(discos, 3)) * 65}%;--c:${CORES[(d - 1) % CORES.length]}"></span>`).join("")}
       </button>`).join("");
+    $(".th-gui").innerHTML = htmlGui();
     $("#th-estado").innerHTML = venceu() || repetindo ? ""
       : pego === null ? "Toque num pino para pegar o disco de cima."
       : `Você pegou o <b>${nomeDisco(pinos[pego].at(-1))}</b>. Solte num pino vazio ou em cima de um disco maior.`;
@@ -141,6 +165,7 @@ export function montar(palco, ctx) {
   function tocar(i) {
     let antesMov = null, moveu = false;
     if (venceu() || repetindo) return;
+    clima = "contente";
     if (pego === null) {
       if (!pinos[i].length) return;
       pego = i;
@@ -155,6 +180,7 @@ export function montar(palco, ctx) {
         aviso.textContent = "Esse disco é maior. Ele não pode ficar em cima de um menor.";
         aviso.className = "aviso erro";
         som("erro");
+        clima = "preocupado";
         pego = null;
       } else {
         antesMov = posicoes($("#th-base"), "[data-peca]");
@@ -164,12 +190,14 @@ export function montar(palco, ctx) {
         som("solta");
         if (venceu()) {
           som("vitoria");
+          clima = "feliz";
           const perfeito = movimentos === minimo();
           if (perfeito) festa();
           const passos = [...historico.map((p) => p.map((x) => [...x])), pinos.map((p) => [...p])];
           ctx?.definirReplay?.(() => mostrarSolucao(passos));
           ctx?.registrarSolo(DIFICULDADE[discos], Math.max(0.4, (perfeito ? 1 : 0.6) - dicas.usados * 0.03),
             `Montou a torre de ${discos} discos em ${movimentos} movimentos${perfeito ? ", o mínimo possível" : ""}.`);
+          if (!guiada && perfeito && dicas.usados === 0) ctx?.conquistar?.("hanoi-minimo");
           if (!guiada && discos >= 5) ctx?.conquistar?.("hanoi-5");
           if (!guiada && discos >= 7) ctx?.conquistar?.("hanoi-7");
           ctx?.fala("resolveu");
@@ -208,7 +236,7 @@ export function montar(palco, ctx) {
   });
   $("#th-desfazer").addEventListener("click", () => {
     if (!historico.length) return;
-    pinos = historico.pop(); pego = null; movimentos -= 1;
+    pinos = historico.pop(); pego = null; movimentos -= 1; clima = "contente";
     aviso.textContent = ""; aviso.className = "aviso";
     desenhar(); dicas.zerar();
   });
@@ -222,6 +250,15 @@ export function montar(palco, ctx) {
   }
 
   iniciar();
+  $(".th-gui").hidden = !ctx?.historia;
+  $(".th-gui").addEventListener("click", () => { som("nota", 1); jogo.abrirHistoria(); });
+  if (querIlustrado) {
+    abrirIlustrado([IMG.cenario, IMG.atlas], {
+      vivo: () => vivo,
+      aplicar: () => { ilustrado = true; $(".th-templo").classList.add("ilustrado"); desenhar(); },
+      revelar: () => $(".th-templo").classList.remove("carregando"),
+    });
+  }
   setTimeout(() => {
     if (guiada === 3) ctx?.dizer?.("Agora tente sozinho. Lembre: primeiro liberte o disco maior.");
     dicas.zerar();

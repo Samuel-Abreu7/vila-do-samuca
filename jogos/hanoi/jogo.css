@@ -56,3 +56,21 @@
 }
 .th-estado { margin: 0; text-align: center; font-weight: 700; color: var(--tinta); min-height: 1.4em; }
 .th-estado b { color: #ffe08a; }
+
+/* ---------- Modelo ilustrado (02/10/2026) ----------
+   Pátio de jardim pintado de fundo; o Gui (galo) fica numa faixa no alto, ao lado das hastes, e reage a cada
+   jogada (contente, feliz, preocupado). A haste é um recorte pintado, esticado até a altura do pino.
+   Os discos seguem em CSS. Tudo parado até a criança tocar. */
+.th-templo { position: relative; }
+.th-templo.carregando { opacity: 0; }
+.th-gui { position: absolute; right: 8px; top: 6px; z-index: 5; min-width: 64px; min-height: 64px; padding: 2px 6px; border: 0; border-radius: 16px; cursor: pointer;
+  display: grid; place-items: center; background: rgba(255,255,255,.55); }
+.th-gui:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+.th-gui:active { translate: 0 2px; }
+.th-templo.ilustrado { background: #f4b87a url("img/cenario.webp") center bottom / cover no-repeat; padding-top: 92px; }
+.th-templo.ilustrado::before { display: none; }
+.th-templo.ilustrado .th-haste.poste { width: 22px; background-color: transparent; border-radius: 0; }
+.th-templo.ilustrado .th-pino::after { background: linear-gradient(180deg, #e8b878, #a6682f); }
+.th-templo.ilustrado .th-placas span { background: rgba(255, 244, 214, .92); }
+.th-templo.ilustrado .th-placas span:last-child { background: #f6e3a8; }
+.th-dica-visual { margin: 8px 0 12px; color: var(--apagado); font-size: .9rem; }

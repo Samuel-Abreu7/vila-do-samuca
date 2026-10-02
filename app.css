@@ -534,6 +534,8 @@ textarea.campo { font: 600 .8rem/1.4 ui-monospace, Consolas, monospace; resize: 
 }
 
 /* ---------- Onda 1: fim de partida, o que treina, preferências, acessibilidade, modo leve ---------- */
+/* Sprites de atlas (o recorte e a imagem vão inline, por `criarSprites` no util) */
+.spr { display: inline-block; flex: none; background-repeat: no-repeat; }
 .fim-card {
   display: grid; gap: 10px; padding: 14px; border-radius: 18px;
   background: var(--cartao); box-shadow: 0 5px 0 var(--sombra);

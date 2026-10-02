@@ -45,3 +45,18 @@
 .nim-palito:disabled { cursor: default; }
 .nim-vazia { color: rgba(255,244,230,.7); font-family: var(--titulo); }
 @media (prefers-reduced-motion: no-preference) { .nim-palito { transition: translate .15s, opacity .15s; } }
+
+/* ---------- Modelo ilustrado (02/10/2026) ----------
+   Noite de acampamento pintada; palitos de bambu pintados (recorte esticado até a caixa do botão); o Tito (panda)
+   numa faixa de céu no alto, reagindo ao fim da partida. A fogueira já está no cenário. Tudo parado até a criança tocar. */
+.nim-acampamento { position: relative; }
+.nim-acampamento.carregando { opacity: 0; }
+.nim-tito { position: absolute; right: 8px; top: 6px; z-index: 5; min-width: 64px; min-height: 84px; padding: 2px 6px; border: 0; border-radius: 16px; cursor: pointer;
+  display: grid; place-items: center; background: rgba(255,255,255,.55); }
+.nim-tito:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+.nim-tito:active { translate: 0 2px; }
+.nim-acampamento.ilustrado { background: #1b1c4a url("img/cenario.webp") center / cover no-repeat; padding-top: 100px; }
+.nim-acampamento.ilustrado .nim-fogueira { display: none; }
+.nim-acampamento.ilustrado .nim-palito { background-color: transparent; background-repeat: no-repeat; box-shadow: none; border-radius: 0; width: 26px; height: 84px; }
+.nim-acampamento.ilustrado .nim-palito.marcado { box-shadow: none; filter: drop-shadow(0 6px 6px rgba(0,0,0,.5)); }
+.nim-dica-visual { margin: 8px 0 0; color: var(--apagado); font-size: .9rem; }

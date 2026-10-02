@@ -52,10 +52,36 @@ export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&a
 const chaveEscolha = (ctx, nome) => `escolha:${ctx?.jogadores?.[0]?.id || "visitante"}:${nome}`;
 // Jogos com modelo ilustrado: a escolha da criança vale; sem escolha, ilustrado, menos em celular fraco.
 export const visualIlustrado = (ctx, chave) => (escolhaDaCrianca(ctx, chave) ?? (document.body.classList.contains("leve") ? "leve" : "ilustrado")) === "ilustrado";
-// Baixa as imagens do modelo ilustrado. Resolve false se alguma falhar (sem internet) ou passar de 4 s.
-export function carregarImagens(urls, ms = 4000) {
+// Sprites de um atlas: cada figura é um retângulo [x, y, largura, altura] do arquivo de imagem, e `k` é a
+// escala (px de tela por px do atlas). Tudo vai inline (inclusive a imagem), para dois jogos nunca se
+// confundirem: os estilos dos jogos ficam na página depois de visitados.
+export function criarSprites(url, largura, altura, retangulos) {
+  // ky: escala na vertical, se for diferente da horizontal (ex.: esticar uma haste).
+  const sprite = (nome, k, extra = "", ky = k) => {
+    const [x, y, w, h] = retangulos[nome];
+    return `<span class="spr ${extra}" style="width:${(w * k).toFixed(1)}px;height:${(h * ky).toFixed(1)}px;background-image:url('${url}');background-size:${(largura * k).toFixed(1)}px ${(altura * ky).toFixed(1)}px;background-position:${(-x * k).toFixed(1)}px ${(-y * ky).toFixed(1)}px" aria-hidden="true"></span>`;
+  };
+  // Estilo inline para um elemento QUALQUER mostrar o recorte esticado até preencher a caixa dele.
+  sprite.preencher = (nome) => {
+    const [x, y, w, h] = retangulos[nome];
+    return `background-image:url('${url}');background-repeat:no-repeat;background-size:${(largura / w * 100).toFixed(2)}% ${(altura / h * 100).toFixed(2)}%;background-position:${(x / (largura - w) * 100).toFixed(2)}% ${(y / (altura - h) * 100).toFixed(2)}%`;
+  };
+  return sprite;
+}
+
+// Abre o modelo ilustrado sem espera nem susto. A cena nasce no modelo leve e escondida (classe "carregando")
+// por até `ms` (0,8 s). Se as imagens chegam nesse tempo, `aplicar()` troca para o ilustrado ainda escondida e
+// `revelar()` mostra; se não chegam (internet lenta ou sem internet), `revelar()` mostra o leve e ele fica assim
+// nesta partida: nada muda sozinho no meio do jogo. As imagens continuam baixando, e a próxima abertura já vem
+// ilustrada. `vivo()` diz se o jogo ainda está na tela.
+export function abrirIlustrado(urls, { aplicar, revelar, ms = 800, vivo = () => true }) {
   const baixar = (url) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(true); i.onerror = () => ok(false); i.src = url; });
-  return Promise.race([Promise.all(urls.map(baixar)).then((r) => r.every(Boolean)), new Promise((ok) => setTimeout(() => ok(false), ms))]);
+  const tudo = Promise.all(urls.map(baixar)).then((r) => r.every(Boolean));
+  Promise.race([tudo, new Promise((ok) => setTimeout(() => ok(false), ms))]).then((ok) => {
+    if (!vivo()) return;
+    if (ok) aplicar();
+    revelar();
+  });
 }
 export const escolhaDaCrianca = (ctx, nome) => ler(chaveEscolha(ctx, nome), null);
 export const guardarEscolha = (ctx, nome, valor) => guardar(chaveEscolha(ctx, nome), valor);

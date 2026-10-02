@@ -124,7 +124,7 @@ const DESENHOS = {
     <path d="M36 44 l6 -8 l6 8 Z" fill="#3aa856"/><path d="M52 58 l6 8 l6 -8 Z" fill="#ff5b61"/>`,
   hanoi: `${sombra}<rect x="46" y="12" width="8" height="74" rx="4" fill="#9a6232"/><rect x="12" y="84" width="76" height="8" rx="4" fill="#7a4a24"/>
     <rect x="16" y="68" width="68" height="15" rx="7.5" fill="#a879ff"/><rect x="24" y="52" width="52" height="15" rx="7.5" fill="#3aa6ff"/><rect x="32" y="36" width="36" height="15" rx="7.5" fill="#3bd67f"/><rect x="38" y="20" width="24" height="15" rx="7.5" fill="#ffc83d"/>`,
-  nim: `${sombra}${[20, 34, 48, 62, 76].map((x, i) => `<g transform="rotate(${(i - 2) * 8} ${x} 80)"><rect x="${x - 4}" y="${22 + Math.abs(i - 2) * 4}" width="8" height="${60 - Math.abs(i - 2) * 4}" rx="4" fill="#f0c890"/><circle cx="${x}" cy="${24 + Math.abs(i - 2) * 4}" r="6" fill="#e0322a"/></g>`).join("")}`,
+  nim: `${sombra}${[20, 34, 48, 62, 76].map((x, i) => `<g transform="rotate(${(i - 2) * 8} ${x} 80)"><rect x="${x - 4}" y="${22 + Math.abs(i - 2) * 4}" width="8" height="${60 - Math.abs(i - 2) * 4}" rx="4" fill="#8fcf6a"/><path d="M${x - 4} ${40 + Math.abs(i - 2) * 4} h8 M${x - 4} ${58 + Math.abs(i - 2) * 4} h8" stroke="#4f8a3b" stroke-width="2.5" stroke-linecap="round"/></g>`).join("")}`,
   pontos: `${sombra}<rect x="10" y="10" width="80" height="80" rx="12" fill="#2f2790"/><rect x="18" y="18" width="30" height="30" rx="4" fill="#3aa6ff" opacity=".7"/>
     <path d="M18 18 h30 v30 h-30 Z" stroke="#3aa6ff" stroke-width="5" fill="none"/><path d="M48 48 h30 M78 48 v30" stroke="#ff5b61" stroke-width="5" stroke-linecap="round"/>
     ${[18, 48, 78].map((y) => [18, 48, 78].map((x) => `<circle cx="${x}" cy="${y}" r="5" fill="#fff"/>`).join("")).join("")}`,
@@ -170,6 +170,36 @@ DESENHOS.tome = `${sombra}
     <circle cx="50" cy="46" r="33" fill="#5a3216"/><circle cx="30" cy="40" r="9" fill="#6b3f1c"/><circle cx="70" cy="40" r="9" fill="#6b3f1c"/><circle cx="50" cy="22" r="10" fill="#6b3f1c"/>
     <ellipse cx="50" cy="54" rx="22" ry="21" fill="#9a6232"/><ellipse cx="50" cy="64" rx="12" ry="9" fill="#e9c58f"/>
     ${olhos(50, 10, 5)}<ellipse cx="50" cy="61" rx="4.5" ry="3" fill="#2a1f1c"/>${sorriso(69, 5)}`;
+// Gui, o galo (França), Tito, o panda (China), Zuzu, a abelha, e Bia, a tartaruga: anfitriões dos outros jogos.
+// Sem chapéu, boina nem roupa típica: nada de estereótipo de país.
+DESENHOS.gui = `${sombra}
+    <path d="M68 62 Q94 50 90 84 Q80 74 68 78 Z" fill="#2f9e6b"/>
+    <ellipse cx="50" cy="68" rx="26" ry="23" fill="#c8581f"/><ellipse cx="50" cy="74" rx="15" ry="13" fill="#f6dba0"/>
+    <path d="M38 26 Q33 12 42 14 Q46 4 52 14 Q62 10 60 26 Z" fill="#e63a2e"/>
+    <circle cx="50" cy="42" r="20" fill="#e0752e"/>${olhos(40, 8, 5)}
+    <path d="M43 49 L57 49 L50 58 Z" fill="#ffc93d"/><ellipse cx="50" cy="60" rx="4.5" ry="5.5" fill="#e63a2e"/>
+    <path d="M40 91 h9 M54 91 h9" stroke="#ffb13d" stroke-width="4" stroke-linecap="round"/>`;
+DESENHOS.tito = `${sombra}
+    <ellipse cx="50" cy="72" rx="28" ry="21" fill="#f6f6f2"/>
+    <circle cx="25" cy="62" r="11" fill="#2b2b33"/><circle cx="75" cy="62" r="11" fill="#2b2b33"/>
+    <rect x="76" y="38" width="6" height="52" rx="3" fill="#6fcf6a"/><path d="M82 52 q10 -4 12 -12 q-10 0 -12 12 Z" fill="#4caf50"/>
+    <circle cx="28" cy="18" r="9" fill="#2b2b33"/><circle cx="72" cy="18" r="9" fill="#2b2b33"/><circle cx="50" cy="38" r="26" fill="#fff"/>
+    <ellipse cx="38" cy="37" rx="8" ry="10" fill="#2b2b33" transform="rotate(-20 38 37)"/><ellipse cx="62" cy="37" rx="8" ry="10" fill="#2b2b33" transform="rotate(20 62 37)"/>
+    <circle cx="39" cy="37" r="3.2" fill="#fff"/><circle cx="61" cy="37" r="3.2" fill="#fff"/>
+    <ellipse cx="50" cy="48" rx="5" ry="3.4" fill="#2b2b33"/>${sorriso(54, 5)}`;
+DESENHOS.zuzu = `${sombra}
+    <ellipse cx="25" cy="48" rx="13" ry="8" fill="#cfeaf5" transform="rotate(-25 25 48)"/><ellipse cx="75" cy="48" rx="13" ry="8" fill="#cfeaf5" transform="rotate(25 75 48)"/>
+    <ellipse cx="50" cy="66" rx="24" ry="25" fill="#ffd23d"/>
+    <path d="M30 60 q20 6 40 0 M27 72 q23 6 46 0" stroke="#2b2b33" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <circle cx="50" cy="38" r="18" fill="#ffd23d"/>
+    <path d="M42 22 Q38 10 30 10 M58 22 Q62 10 70 10" stroke="#2b2b33" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="30" cy="10" r="3" fill="#2b2b33"/><circle cx="70" cy="10" r="3" fill="#2b2b33"/>
+    ${olhos(37, 7, 4.5)}${sorriso(46, 5)}`;
+DESENHOS.bia = `${sombra}
+    <ellipse cx="50" cy="68" rx="32" ry="23" fill="#4f8a4b"/>
+    <path d="M50 50 l12 7 v13 l-12 7 l-12 -7 v-13 z" fill="#6aa65a"/><path d="M30 62 l8 -5 M70 62 l-8 -5 M34 80 l8 -3 M66 80 l-8 -3" stroke="#3d6e3a" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="32" cy="89" rx="9" ry="5" fill="#8fd16e"/><ellipse cx="68" cy="89" rx="9" ry="5" fill="#8fd16e"/>
+    <circle cx="50" cy="36" r="17" fill="#8fd16e"/>${olhos(35, 7, 4.5)}${sorriso(44, 5)}
+    <circle cx="82" cy="62" r="5" fill="#ffd23d" stroke="#b8860b" stroke-width="1.5"/><rect x="81" y="66" width="3" height="14" fill="#ffd23d"/><rect x="84" y="73" width="5" height="3" fill="#ffd23d"/>`;
 // Bento, o texugo: anfitrião do Reino Unido (Alcuíno era de York). Calmo e curioso, gosta de
 // mapas antigos. Sem chapéu-coco, chá ou outro estereótipo de país.
 DESENHOS.bento = `${sombra}
@@ -198,7 +228,7 @@ export const NOME_DESENHO = {
   leao: "Leão", tigre: "Tigre", panda: "Panda", sapo: "Sapo", polvo: "Polvo", unicornio: "Unicórnio", dragao: "Dragão", dino: "Dinossauro",
   golfinho: "Golfinho", tubarao: "Tubarão", abelha: "Abelha", borboleta: "Borboleta", foguete: "Foguete", bola: "Bola", violao: "Violão", cacto: "Cacto",
   cachorro: "Cachorro", gato: "Gato", maca: "Maçã", banana: "Banana", estrela: "Estrela", lua: "Lua", carro: "Carro", balao: "Balão",
-  bento: "Bento, o texugo", tome: "Tomé, o bisão", flor: "Flor", gota: "Gota", bandeira: "Bandeira", trofeu: "Troféu", samuca: "Samuca", lupa: "Lupa", chave: "Chave", cofre: "Cofre", uva: "Uva", laranja: "Laranja", morango: "Morango", pera: "Pera",
+  bento: "Bento, o texugo", tome: "Tomé, o bisão", gui: "Gui, o galo", tito: "Tito, o panda", zuzu: "Zuzu, a abelha", bia: "Bia, a tartaruga", flor: "Flor", gota: "Gota", bandeira: "Bandeira", trofeu: "Troféu", samuca: "Samuca", lupa: "Lupa", chave: "Chave", cofre: "Cofre", uva: "Uva", laranja: "Laranja", morango: "Morango", pera: "Pera",
 };
 export const nomeDoAvatar = (valor) => NOME_DESENHO[AVATAR_DE[valor]] || "Personagem";
 // Valor desconhecido (por exemplo, de uma cópia de segurança editada) entra escapado.

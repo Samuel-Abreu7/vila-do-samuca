@@ -92,7 +92,6 @@
    Cenário pintado de fundo; cabine com a raposa passageira, janelas, porta e bandeira em sprites (atlas
    recortado por `spr`). O prédio continua desenhado em CSS, porque o número de andares muda de fase para fase.
    Tudo parado até a criança tocar. */
-.spr { display: inline-block; flex: none; background: url("img/atlas.webp") no-repeat; }
 .el-cena { position: relative; }
 .el-cena.ilustrado { background: #6ac9fb url("img/cenario.webp") center bottom / cover no-repeat; padding-bottom: 44px; }
 .el-cena.carregando { opacity: 0; }

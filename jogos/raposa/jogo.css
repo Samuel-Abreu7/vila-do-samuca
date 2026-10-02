@@ -151,11 +151,6 @@
 /* ---------- Modelo ilustrado (02/10/2026) ----------
    Cenário pintado de fundo e personagens num atlas de sprites (grade 5×3). Os desenhos em código
    do modelo leve ficam escondidos; a cena continua parada até a criança tocar. */
-.spr { display: inline-block; flex: none; width: var(--s); height: var(--s);
-  background: url("img/atlas.webp") no-repeat;
-  background-size: calc(var(--s) * 5) calc(var(--s) * 3);
-  background-position: calc(var(--s) * var(--c) * -1) calc(var(--s) * var(--l) * -1); }
-.spr.larga { width: calc(var(--s) * 2); }
 .rp-cena.ilustrado { background: #7fc468 url("img/cenario.webp") center / cover no-repeat; }
 .rp-cena.carregando { opacity: 0; }
 .rp-cena.ilustrado :is(.rp-areia, .rp-arvore, .rp-arbusto, .rp-cais, .rp-ondas, .rp-junco, .rp-vitoria, .rp-morros, .rp-meta) { display: none; }
