@@ -1,7 +1,7 @@
 // Raposa, cordeiro e couve — Alcuíno de York, séc. VIII.
 // O barqueiro atravessa o rio levando no máximo um passageiro.
 // Não pode ficar sozinho, sem o barqueiro: raposa com cordeiro, cordeiro com couve.
-import { carregarEstilo, faixa, som, festa, prepararJogo, posicoes, mover, dicasEmDegraus, repetir, semMovimento, fatorLento } from "../../util.js";
+import { carregarEstilo, faixa, som, festa, prepararJogo, posicoes, mover, dicasEmDegraus, repetir, semMovimento, fatorLento, escolhaDaCrianca, guardarEscolha, escolhas, modoLeve } from "../../util.js";
 import { arte, icone } from "../../arte.js";
 
 // nota: grau da escala da música (cada bicho tem a sua nota de piano ao ser tocado).
@@ -51,6 +51,22 @@ export function resolver(lado, barco, ids) {
   return null;
 }
 
+// ---------- Modelo ilustrado (imagens geradas por IA, assinadas pela vila) ----------
+// Duas versões do jogo à escolha: a ilustrada (um cenário pintado e um atlas com os personagens) e a
+// leve (desenhos em código: sem internet e em celular fraco). Cada figura do atlas é uma célula da
+// grade 5×3: [coluna, linha]. Se as imagens não carregarem (sem internet), cai sozinho no leve.
+const IMG = { cenario: new URL("./img/cenario.webp", import.meta.url).href, atlas: new URL("./img/atlas.webp", import.meta.url).href };
+const SPRITE = {
+  raposa: [0, 0], "raposa-feliz": [1, 0], cordeiro: [2, 0], "cordeiro-feliz": [3, 0], "cordeiro-preocupado": [4, 0],
+  couve: [0, 1], "couve-feliz": [1, 1], "couve-preocupada": [2, 1], bento: [3, 1], "barqueiro-acena": [4, 1],
+  "barqueiro-remando": [0, 2], "barco-vazio": [2, 2],
+};
+const spr = (nome, tam, extra = "") => `<span class="spr ${extra}" style="--s:${tam}px;--c:${SPRITE[nome][0]};--l:${SPRITE[nome][1]}" aria-hidden="true"></span>`;
+function carregarImagens() {
+  const baixar = (url) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(true); i.onerror = () => ok(false); i.src = url; });
+  return Promise.race([Promise.all([baixar(IMG.cenario), baixar(IMG.atlas)]).then((r) => r.every(Boolean)), new Promise((ok) => setTimeout(() => ok(false), 4000))]);
+}
+
 // ---------- Cenário (desenhos parados, no traço da vila) ----------
 const ARVORE = `<svg class="rp-arvore" viewBox="0 0 60 80" aria-hidden="true"><rect x="26" y="44" width="8" height="30" rx="3" fill="#7a4a24"/>
   <circle cx="30" cy="30" r="22" fill="#2f9e3a"/><circle cx="20" cy="36" r="13" fill="#2a8f35"/><circle cx="40" cy="34" r="14" fill="#38ad44"/>
@@ -93,19 +109,25 @@ export function montar(palco, ctx) {
   let historico = [];
   let problema = null, vitima = null, erros = 0;
   let vivo = true, repetindo = false;
+  // Visual: a escolha da criança vale; sem escolha, ilustrado, menos em celular fraco (modo leve).
+  const escolhaVisual = escolhaDaCrianca(ctx, "raposa:visual");
+  let ilustrado = (escolhaVisual ?? (modoLeve() ? "leve" : "ilustrado")) === "ilustrado";
+  // figura: sprite no ilustrado; desenho em código no leve (tamanhos: leve, ilustrado)
+  const figura = (nome, tamLeve, tamIlu) => (ilustrado && SPRITE[nome] ? spr(nome, tamIlu) : arte(nome, tamLeve));
+  const htmlCombinados = () => `<span aria-hidden="true">Sozinhos, não:</span>
+        ${PERIGOS.filter((x) => ids.includes(x.a) && ids.includes(x.b)).map((x) =>
+          `<span class="rp-par" aria-hidden="true">${figura(x.a, 30, 44)}<b>✕</b>${figura(x.b, 30, 44)}</span>`).join("")}`;
 
   palco.innerHTML = `
     <section class="jg rp">
-      ${faixa(arte("raposa", 54), "Raposa, cordeiro e couve")}
+      ${faixa(arte("raposa", 54), "Raposa, cordeiro e couve", { ajustes: !fase })}
       <div class="rp-combinados" role="note" aria-label="Sem o barqueiro, não podem ficar sozinhos: ${PERIGOS.filter((x) => ids.includes(x.a) && ids.includes(x.b)).map((x) => `${artigo[x.a]} com ${artigo[x.b]}`).join("; ")}.">
-        <span aria-hidden="true">Sozinhos, não:</span>
-        ${PERIGOS.filter((x) => ids.includes(x.a) && ids.includes(x.b)).map((x) =>
-          `<span class="rp-par" aria-hidden="true">${arte(x.a, 30)}<b>✕</b>${arte(x.b, 30)}</span>`).join("")}
+        ${htmlCombinados()}
       </div>
-      <div class="rp-cena" data-teclado=".rp-peca">
+      <div class="rp-cena${ilustrado ? " ilustrado carregando" : ""}" data-teclado=".rp-peca">
         <div class="rp-margem" data-lado="cima" role="group" aria-label="Margem de partida">
           <span class="rp-placa">Partida</span>${CENARIO_CIMA}
-          <button type="button" class="rp-bento" aria-label="Bento, o texugo. Toque para ouvir a história do jogo.">${arte("bento", 46)}</button>
+          <button type="button" class="rp-bento" aria-label="Bento, o texugo. Toque para ouvir a história do jogo.">${figura("bento", 46, 58)}</button>
           <span class="rp-aqui" aria-hidden="true">O barco está aqui</span>
           <div class="rp-gente"></div>
         </div>
@@ -133,8 +155,17 @@ export function montar(palco, ctx) {
   const barco = $("#rp-barco");
   const aviso = $("#rp-aviso");
 
+  // Ajustes: o visual (ilustrado ou leve). Trocar recomeça a partida, por isso passa pelo guarda do limite.
+  const ajustes = document.createElement("div");
+  ajustes.innerHTML = `<span class="rotulo">Visual do jogo</span><div id="rp-visual" class="escolhas" data-nova-partida></div>
+    <p class="rp-dica-visual">O ilustrado tem desenhos mais ricos e precisa de internet. O leve funciona sem internet e em celular mais simples.</p>`;
+  escolhas(ajustes.querySelector("#rp-visual"), [["ilustrado", "Ilustrado"], ["leve", "Leve"]], ilustrado ? "ilustrado" : "leve", (v) => {
+    guardarEscolha(ctx, "raposa:visual", v);
+    ctx?.reiniciar?.();
+  });
+
   const jogo = prepararJogo(palco, {
-    ctx, tutorial: true,
+    ctx, tutorial: true, ajustes: fase ? null : ajustes,
     regras: `<ul>
       <li>Leve todos para a margem da bandeira, lá embaixo.</li>
       <li>O barco leva o barqueiro e <b>mais um</b>. Toque em quem vai junto.</li>
@@ -206,7 +237,7 @@ export function montar(palco, ctx) {
     b.type = "button";
     b.dataset.peca = p.id;
     const humor = vitima === p.id ? HUMOR.preocupado[p.id] : ondeEsta === "baixo" ? HUMOR.feliz[p.id] : null;
-    b.innerHTML = `<span class="rp-figura">${arte(humor || p.id, ondeEsta === "barco" ? 52 : 62)}${vitima === p.id ? '<span class="rp-susto" aria-hidden="true">!</span>' : ""}</span><span class="rp-nome">${p.nome}</span>`;
+    b.innerHTML = `<span class="rp-figura">${figura(humor || p.id, ondeEsta === "barco" ? 52 : 62, ondeEsta === "barco" ? 84 : 100)}${vitima === p.id ? '<span class="rp-susto" aria-hidden="true">!</span>' : ""}</span><span class="rp-nome">${p.nome}</span>`;
     b.disabled = repetindo || !(!problema && !venceu() && (ondeEsta === "barco" || estado.lado[p.id] === estado.barco));
     b.className = `rp-peca ${ondeEsta === "barco" ? "no-barco" : b.disabled ? "longe" : "pode"}`;
     b.setAttribute("aria-label", ondeEsta === "barco" ? `${p.nome}, no barco. Toque para descer.`
@@ -235,13 +266,17 @@ export function montar(palco, ctx) {
       }
       m.classList.toggle("com-barco", estado.barco === lado);
     }
-    barco.innerHTML = `${CASCO}${REMOS}<span class="rp-barqueiro" role="img" aria-label="Barqueiro">${arte(venceu() ? "barqueiro-feliz" : "barqueiro", 56)}</span>`;
+    barco.innerHTML = ilustrado
+      ? (venceu()
+        ? `<span class="spr-barqueiro-acena" role="img" aria-label="Barqueiro acenando">${spr("barqueiro-acena", 110)}</span>${spr("barco-vazio", 150, "larga spr-barco")}`
+        : `<span class="spr-barco-inteiro" role="img" aria-label="Barqueiro remando no barco">${spr("barqueiro-remando", 150, "larga spr-barco")}</span>`)
+      : `${CASCO}${REMOS}<span class="rp-barqueiro" role="img" aria-label="Barqueiro">${arte(venceu() ? "barqueiro-feliz" : "barqueiro", 56)}</span>`;
     // Lugar vago desenhado: "cabe mais um" sem precisar ler a regra.
     if (!estado.carga && !venceu()) barco.insertAdjacentHTML("beforeend", `<span class="rp-vago" aria-hidden="true">+1</span>`);
     // Placa da chegada: quantos já chegaram, com as figurinhas (✓ em quem chegou, não só a cor).
     const chegaram = PERSONAGENS.filter((p) => estado.lado[p.id] === "baixo" && estado.carga !== p.id);
     $("#rp-chegada").innerHTML = `Chegada <span class="rp-chegaram">${PERSONAGENS.map((p) =>
-      `<span class="rp-mini ${chegaram.includes(p) ? "chegou" : ""}">${arte(p.id, 24)}</span>`).join("")}</span>
+      `<span class="rp-mini ${chegaram.includes(p) ? "chegou" : ""}">${figura(p.id, 24, 34)}</span>`).join("")}</span>
       <span class="so-leitor">${chegaram.length} de ${PERSONAGENS.length} chegaram</span><b aria-hidden="true">${chegaram.length} de ${PERSONAGENS.length}</b>`;
     if (estado.carga) barco.appendChild(peca(PERSONAGENS.find((p) => p.id === estado.carga), "barco"));
     barco.dataset.lado = estado.barco;
@@ -313,6 +348,9 @@ export function montar(palco, ctx) {
     requestAnimationFrame(() => barco.querySelectorAll(".rp-remo").forEach((r, i) => r.animate(
       [{ rotate: "0deg" }, { rotate: `${i ? -28 : 28}deg` }, { rotate: "0deg" }],
       { duration: duracao / 3, iterations: 3, easing: "ease-in-out" })));
+    // Barco ilustrado: um balanço leve, só durante a travessia.
+    barco.querySelector(".spr-barco")?.animate([{ rotate: "0deg" }, { rotate: "-2.5deg" }, { rotate: "2.5deg" }, { rotate: "0deg" }],
+      { duration: duracao / 1.5, iterations: 1.5, easing: "ease-in-out" });
     const rio = $(".rp-rio");
     const topo = saida === "cima" ? 30 : rio.clientHeight - 40;
     for (let i = 0; i < 3; i++) {
@@ -367,6 +405,20 @@ export function montar(palco, ctx) {
   });
 
   $(".rp-bento").hidden = !ctx?.historia;
+  if (ilustrado) {
+    carregarImagens().then((ok) => {
+      if (!vivo) return;
+      if (!ok) {
+        // Sem internet (ou lenta): volta sozinho ao modelo leve, sem avisar nem travar.
+        ilustrado = false;
+        cena.classList.remove("ilustrado");
+        palco.querySelector(".rp-combinados").innerHTML = htmlCombinados();
+        $(".rp-bento").innerHTML = figura("bento", 46, 58);
+        desenhar();
+      }
+      cena.classList.remove("carregando");
+    });
+  }
   $(".rp-bento").addEventListener("click", () => { som("nota", 1); jogo.abrirHistoria(); });
   desenhar();
   // O balão do Samuca entra logo depois de montar; por isso a primeira fala espera um instante.
