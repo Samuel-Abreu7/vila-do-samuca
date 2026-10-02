@@ -469,7 +469,9 @@ const CUIDADOS = [
     "São jogos de raciocínio clássicos, alguns com séculos de história. Cada um diz o que treina: planejar, deduzir, espaço e formas, números ou jogar a dois.",
     "Toda curiosidade e todo fato histórico são conferidos em fonte antes de entrar.",
     "Jogo com dono (marca registrada ou produto comercial) só entra numa versão nossa, com nome, desenhos e fases próprios.",
-    "Os desenhos foram criados para o portal, com ajuda de inteligência artificial, no mesmo traço do Samuca. Os arquivos da marca levam credenciais de conteúdo (C2PA), que registram essa origem, e toda imagem que vem de fora tem a origem conferida antes de entrar.",
+    "Os desenhos e as ilustrações foram criados para o portal, com ajuda de inteligência artificial, no mesmo traço do Samuca. Os arquivos da marca e as ilustrações levam credenciais de conteúdo (C2PA), que registram essa origem, e toda imagem que vem de fora tem a origem conferida antes de entrar.",
+    "A história do Bento, o texugo, é narrada por uma voz de inteligência artificial, que não imita nenhuma pessoa. Ela só toca quando a criança pede, tem o botão Pular e, sem internet, quem lê é a voz do próprio celular.",
+    "O jogo da Raposa tem dois modelos: o ilustrado, mais rico, que precisa de internet, e o leve, que funciona sem internet e em celular mais simples. A criança ou um adulto escolhe nos ajustes.",
     "Jogos de origem indígena citam a origem com respeito.",
   ] },
 ];

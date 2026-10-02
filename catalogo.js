@@ -52,7 +52,7 @@ export const JOGOS = [
     // "Propositiones ad Acuendos Juvenes" e "Wolf, goat and cabbage problem"; MacTutor, St Andrews).
     // audio: arquivo de voz de IA, quando existir (origem e licença registradas em DECISOES.md).
     historia: {
-      anfitriao: "bento", quem: "Bento, o texugo", titulo: "O rio de Alcuíno", convite: "A história do Bento", audio: null,
+      anfitriao: "bento", quem: "Bento, o texugo", titulo: "O rio de Alcuíno", convite: "A história do Bento", audio: "jogos/raposa/historia.mp3",
       paginas: [
         "Olá! Eu sou o Bento, um texugo da Inglaterra. Venho de uma cidade antiga chamada York.",
         "Há mais de mil e duzentos anos, em York, vivia um professor chamado Alcuíno. Ele adorava ensinar.",
