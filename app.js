@@ -415,7 +415,7 @@ const CUIDADOS = [
     "Sem anúncios, sem compras e sem pedir dinheiro. É um projeto da família, sem fins lucrativos.",
     "Sem moedas, baús, prêmios sorteados ou sequência de dias seguidos. Nada que faça a criança voltar por obrigação.",
     "Sem notificações. O portal nunca chama a criança.",
-    "Sem ranking e sem comparar primos: o nível de cada um nunca aparece na tela.",
+    "Sem ranking e sem comparar uma criança com outra: o nível de cada um nunca aparece na tela.",
     "Nada fica trancado como recompensa. Todos os jogos estão abertos desde o início.",
     "Cada partida termina de forma natural, com \"Jogar de novo\" e \"Voltar para a vila\" do mesmo tamanho, e uma ideia para brincar fora da tela.",
   ] },
@@ -443,7 +443,7 @@ const CUIDADOS = [
   { icone: "dupla", titulo: "Para todas as idades e jeitos de aprender", itens: [
     "Feito para crianças de 5 a 15 anos, e para quem ainda não lê: todo texto importante tem o botão Ouvir.",
     "Regras uma de cada vez para os menores, três fases guiadas para aprender jogando, e dicas que ensinam a pensar em vez de dar a resposta.",
-    "A dificuldade se ajusta a cada criança, sem trilha fixa por idade: primos de idades diferentes jogam juntos, e quem tem mais experiência dá vantagem ao outro.",
+    "A dificuldade se ajusta a cada criança, sem trilha fixa por idade: irmãos, primos e amigos de idades diferentes jogam juntos, e quem tem mais experiência dá vantagem ao outro.",
     "Contra a coruja, o Samuca joga para a criança ganhar na maior parte das vezes, sem deixar isso aparente.",
     "No painel, para cada criança: animações mais lentas.",
     "Também pensado para quem usa teclado ou o leitor de tela do Android.",
@@ -479,7 +479,7 @@ function telaCuidados() {
     <section class="jg cuidados">
       <div class="faixa" style="--cor-jogo:var(--verde);--cor-jogo-escura:var(--verde-escuro);--cor-jogo-profunda:var(--verde-profundo)">
         <span class="emblema">${S.retrato(56, "feliz")}</span><h1>Para pais e avós</h1></div>
-      <p class="cuidados-intro">A Vila do Samuca é um portal de jogos de raciocínio feito pela família, para os netos e primos:
+      <p class="cuidados-intro">A Vila do Samuca é um portal de jogos de raciocínio feito pela família para os irmãos, netos, primos e amigos próximos:
         um lugar para as crianças brincarem, pensarem e aprenderem com segurança. Estes são os cuidados que guiam cada jogo,
         cada tela e cada som.</p>
       ${CUIDADOS.map((b) => `
