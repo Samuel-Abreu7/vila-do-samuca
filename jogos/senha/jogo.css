@@ -55,3 +55,24 @@
 #sn-historico.dica-regiao { outline: 3px solid var(--ouro); outline-offset: 4px; border-radius: 14px; }
 #sn-niveis button.sugerida { box-shadow: 0 3px 0 var(--sombra), 0 0 0 3px var(--ouro); }
 @media (max-width: 380px) { .sn-fruta { width: 64px; } .sn-lugar { width: 56px; height: 56px; } }
+
+/* ---------- Modelo ilustrado (02/10/2026) ----------
+   Sala do cofre pintada; o cofre pintado fica no alto e abre quando a senha é descoberta; as frutas são recortes
+   pintados; a Bia (tartaruga) cuida do cofre e reage. Tudo parado até a criança tocar. */
+.sn-cena { position: relative; }
+.sn-cena.carregando { opacity: 0; }
+.sn-bia { position: absolute; right: 8px; top: 6px; z-index: 5; min-width: 64px; min-height: 90px; padding: 2px 6px; border: 0; border-radius: 16px; cursor: pointer;
+  display: grid; place-items: center; background: rgba(255,255,255,.55); }
+.sn-bia:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+.sn-bia:active { translate: 0 2px; }
+.sn-cofre-ilu { display: none; justify-content: center; align-items: end; min-height: 98px; }
+.sn-cena.ilustrado { border-radius: 22px; padding: 12px 10px; background: #f0d9b2 url("img/cenario.webp") center / cover no-repeat; box-shadow: 0 6px 0 var(--sombra); }
+.sn-cena.ilustrado .sn-cofre { background: rgba(255, 249, 232, .92); box-shadow: inset 0 0 0 3px #d9bf86; }
+.sn-cena.ilustrado .sn-cofre-ilu { display: flex; }
+.sn-cena.ilustrado .sn-porta { background: #fff1c9; padding: 12px 14px; box-shadow: inset 0 0 0 3px #d9bf86; }
+.sn-cena.ilustrado .sn-porta-titulo { color: #4a3417; }
+.sn-cena.ilustrado .sn-macaneta { display: none; }
+.sn-cena.ilustrado .sn-lugar { border-color: #b99a5a; background: #fffaf0; }
+.sn-cena.ilustrado .sn-cofre.aberto .sn-porta { opacity: .6; }
+.sn-fig.pintada { display: grid; place-items: center; }
+.sn-dica-visual { margin: 8px 0 12px; color: var(--apagado); font-size: .9rem; }

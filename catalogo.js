@@ -37,11 +37,14 @@ export const CONQUISTAS = [
   { id: "nim-samuca", jogo: "nim", nome: "Venceu a coruja", como: "Ganhar do Samuca no Nim." },
   { id: "nim-perde", jogo: "nim", nome: "Pensou ao contrário", como: "Ganhar no Nim com a regra \"quem tira o último perde\"." },
   { id: "pontos-samuca", jogo: "pontos", nome: "Dono do jardim", como: "Ganhar do Samuca em Pontos e caixinhas." },
+  { id: "colmeia-sozinha", jogo: "colmeia", nome: "Só pensando", como: "Completar uma colmeia sem pedir dica." },
   { id: "colmeia-certeira", jogo: "colmeia", nome: "Abelha certeira", como: "Resolver uma colmeia sem nenhum engano." },
   { id: "colmeia-gigante", jogo: "colmeia", nome: "Colmeia gigante", como: "Resolver a colmeia gigante." },
   { id: "pontos-cuidado", jogo: "pontos", nome: "Sem entregar", como: "Terminar uma partida sem fazer o terceiro lado de uma caixinha quando havia outra jogada segura." },
   { id: "pontos-tres", jogo: "pontos", nome: "Três de uma vez", como: "Fechar 3 caixinhas na mesma vez de jogar." },
+  { id: "enigma-sozinho", jogo: "enigma", nome: "Detetive sem ajuda", como: "Resolver um enigma sem pedir dica." },
   { id: "enigma-caso", jogo: "enigma", nome: "Caso resolvido", como: "Desvendar um enigma de lógica sem nenhum engano." },
+  { id: "senha-sozinha", jogo: "senha", nome: "Abriu sem ajuda", como: "Abrir o cofre sem pedir dica." },
   { id: "senha-cofre", jogo: "senha", nome: "Cofre aberto", como: "Abrir um cofre de 4 frutas." },
 ];
 
@@ -220,6 +223,20 @@ export const JOGOS = [
     direito: "mp", // marca própria: inspirado em Hexcells (Matthew Brown, 2014); nome, arte, fases e gerador nossos
     interesses: ["deduzir"],
     curiosidade: "As abelhas fazem favos de seis lados porque o hexágono cobre o espaço sem deixar buracos gastando pouca cera. Em 1999, o matemático Thomas Hales provou que é a forma mais econômica.",
+    // História narrada pela Zuzu (texto conferido em fonte em 02/10/2026: Wikipédia "Honeycomb conjecture": o registro
+    // mais antigo é de Varrão, 36 a.C.; a prova é de Thomas Hales, 1999). Zuzu não tem país: é uma abelha da vila.
+    historia: {
+      anfitriao: "zuzu", quem: "Zuzu, a abelha", titulo: "Por que seis lados?", convite: "A história da Zuzu", audio: "jogos/colmeia/historia.mp3",
+      paginas: [
+        "Bzzz! Eu sou a Zuzu, uma abelha. Eu moro numa colmeia cheia de favos.",
+        "Cada favo é uma casinha de seis lados, que a gente chama de hexágono. Nele guardamos mel e cuidamos dos filhotes.",
+        "Há mais de dois mil anos, um escritor romano chamado Varrão já se perguntava por que os favos têm seis lados.",
+        "Os matemáticos desconfiavam que o hexágono era o jeito mais econômico de dividir o espaço, sem deixar buracos e gastando pouca cera. Mas ninguém tinha provado.",
+        "Só em mil novecentos e noventa e nove, um matemático chamado Thomas Hales provou que é verdade.",
+        "Agora é com você: descubra quais favos têm mel, usando os números. Sem chutar, só pensando!",
+      ],
+    },
+    proximo: "enigma", proximoConvite: "Quer investigar um enigma?",
     paises: [],
     segredo: ["Procure um número que já está completo: se ele diz 2 e já tem 2 méis em volta, todos os outros vizinhos estão vazios.", "Procure um número que precisa de todos: se ele diz 3 e só sobram 3 vizinhos escondidos, todos têm mel.", "Compare dois números vizinhos: o que um sabe sobre os vizinhos em comum ajuda o outro.", "Não chute. Se não tiver certeza sobre um favo, procure outro lugar da colmeia."],
     treina: "Deduzir com certeza: só marcar um favo quando os números provarem.",
@@ -239,6 +256,20 @@ export const JOGOS = [
     direito: "dp", // domínio público: enigma de pistas tradicional (o mais famoso, Life International, 1962)
     interesses: ["deduzir"],
     curiosidade: "Em dezembro de 1962, a revista Life International publicou um enigma de lógica cheio de pistas. Centenas de leitores do mundo todo mandaram a resposta certa. Muita gente diz que foi Einstein quem inventou esse enigma, mas não há nenhuma prova disso.",
+    // História narrada pelo Bento detetive (texto conferido em fonte em 02/10/2026: Wikipédia "Zebra Puzzle"; a data e a
+    // dúvida sobre Einstein vêm da curiosidade acima, já conferida antes).
+    historia: {
+      anfitriao: "bento", quem: "Bento, o texugo detetive", titulo: "O enigma mais famoso", convite: "A história do Bento", audio: "jogos/enigma/historia.mp3",
+      paginas: [
+        "Oi! Eu sou o Bento, um texugo da Inglaterra. Hoje eu sou detetive.",
+        "Detetives resolvem mistérios juntando pistas. Neste jogo, cada pista tira uma possibilidade, até sobrar só uma.",
+        "Existe um enigma famoso desse tipo. Ele saiu numa revista chamada Life International, em dezembro de mil novecentos e sessenta e dois.",
+        "Ele falava de cinco casas, cinco moradores e uma pergunta: quem é o dono da zebra?",
+        "Muita gente conta que foi o Einstein quem inventou esse enigma, mas não existe nenhuma prova disso.",
+        "Aqui na vila, os moradores são os apelidos das crianças da família. Junte as pistas e descubra quem tem cada coisa!",
+      ],
+    },
+    proximo: "senha", proximoConvite: "Quer descobrir uma senha?",
     paises: [],
     segredo: ["Comece pelas pistas que dizem \"não\": cada ✕ tira uma possibilidade.", "Quando uma linha só tem uma casa vazia, a resposta está nela.", "Se alguém já tem um ✓ numa tabela, ninguém mais pode ter a mesma coisa.", "Uma pista que fala de duas coisas (\"quem tem o gato brinca com a bola\") liga duas tabelas: o que vale numa, vale na outra."],
     treina: "Ler com atenção, juntar as pistas e descartar o que não pode ser.",
@@ -257,6 +288,20 @@ export const JOGOS = [
     objetivo: "Descubra a senha de frutas no cofre do Samuca. As pistas dizem quantas estão no lugar certo.",
     direito: "dp", // domínio público: brincadeira tradicional de papel e lápis "Touros e vacas"
     interesses: ["deduzir"],
+    // História narrada pela Bia (texto conferido em fonte em 02/10/2026: Wikipédia "Bulls and cows" e "Mordecai
+    // Meirowitz"). O nome comercial do jogo de tabuleiro de 1970 não é citado, de propósito.
+    historia: {
+      anfitriao: "bia", quem: "Bia, a tartaruga", titulo: "O cofre da Bia", convite: "A história da Bia", audio: "jogos/senha/historia.mp3",
+      paginas: [
+        "Oi! Eu sou a Bia, uma tartaruga. Eu cuido do cofre do Samuca, e só abro com a senha certa.",
+        "Este jogo vem de uma brincadeira de papel e lápis chamada Touros e vacas. Ela é muito antiga: dizem que pode ter mais de cem anos.",
+        "Funciona assim: uma pessoa pensa numa senha, e a outra tenta adivinhar. A cada tentativa, só se diz quantas estão no lugar certo e quantas estão na senha, mas em outro lugar.",
+        "Em mil novecentos e setenta, um homem chamado Mordecai Meirowitz, que trabalhava com telecomunicações em Israel, transformou essa brincadeira num jogo de tabuleiro com pinos coloridos.",
+        "Aqui na vila, em vez de pinos, a senha é feita de frutas, e as pistas vêm em palavras.",
+        "Pense com calma, use cada pista, e o cofre vai abrir. Boa sorte!",
+      ],
+    },
+    proximo: "colmeia", proximoConvite: "Quer descobrir onde tem mel?",
     curiosidade: "A Senha vem de uma brincadeira antiga de papel e lápis chamada Touros e vacas: o touro é um número no lugar certo, e a vaca, um número certo fora do lugar. Ela é mais antiga que os jogos de tabuleiro vendidos em loja com a mesma ideia e, nos anos 1970, virou um dos primeiros jogos de computador.",
     paises: [],
     segredo: ["A primeira tentativa serve para descobrir quais frutas estão no cofre.", "Se uma tentativa não tem nenhuma fruta no cofre, todas aquelas frutas estão fora.", "Mude uma coisa de cada vez: troque uma fruta de lugar e veja o que acontece com as pistas."],

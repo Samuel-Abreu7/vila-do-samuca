@@ -61,3 +61,18 @@
 .en-item { font-size: .68rem; overflow-wrap: anywhere; line-height: 1.1; }
 .en-pista { min-height: 44px; padding: 4px 8px; }
 .en-pistas { gap: 2px; }
+
+/* ---------- Modelo ilustrado (02/10/2026) ----------
+   Escrivaninha pintada: os objetos (abajur, livros, lápis) ficam no alto, o resto é madeira lisa, e o caderno de
+   detetive vai por cima. Os carimbos ✓ e ✕ das casas são recortes pintados. O Bento (texugo detetive) fica no alto
+   e reage aos enganos e ao caso resolvido. Tudo parado até a criança tocar. */
+.en-cena { position: relative; }
+.en-cena.carregando { opacity: 0; }
+.en-bento { position: absolute; right: 8px; top: 6px; z-index: 5; min-width: 64px; min-height: 92px; padding: 2px 6px; border: 0; border-radius: 16px; cursor: pointer;
+  display: grid; place-items: center; background: rgba(255,255,255,.55); }
+.en-bento:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+.en-bento:active { translate: 0 2px; }
+.en-cena.ilustrado { border-radius: 22px; padding: 122px 8px 10px; background: #84603b url("img/cenario.webp") center top / 100% auto no-repeat; box-shadow: 0 6px 0 var(--sombra); }
+.en-cena.ilustrado .en-cel .spr { display: block; margin: 0 auto; }
+.en-cena.ilustrado .en-cel.sim, .en-cena.ilustrado .en-cel.nao { background: #fffdf6; border-color: #c9b68a; }
+.en-dica-visual { margin: 8px 0 12px; color: var(--apagado); font-size: .9rem; }

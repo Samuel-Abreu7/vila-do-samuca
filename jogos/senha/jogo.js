@@ -3,8 +3,18 @@
 // quantas frutas estão no lugar certo e quantas estão na senha, mas em outro lugar.
 // Sem limite de tentativas (nada de "game over"). Nada de pinos coloridos nem tabuleiro de
 // jogo comercial: as pistas são escritas em palavras e as figuras são frutas.
-import { carregarEstilo, escolhas, faixa, som, festa, prepararJogo, sortear, dicasEmDegraus, repetir, escolhaDaCrianca, guardarEscolha } from "../../util.js";
+import { carregarEstilo, escolhas, faixa, som, festa, prepararJogo, sortear, dicasEmDegraus, repetir, escolhaDaCrianca, guardarEscolha, visualIlustrado, abrirIlustrado, criarSprites } from "../../util.js";
 import { arte, icone, NOME_DESENHO } from "../../arte.js";
+
+// ---------- Modelo ilustrado (imagens geradas por IA, assinadas pela vila) ----------
+// Sala do cofre pintada, o cofre pintado que abre de verdade, as seis frutas pintadas e a Bia (tartaruga), que cuida
+// do cofre e reage. Duas versões à escolha: ilustrada e leve.
+const IMG = { cenario: new URL("./img/cenario.webp", import.meta.url).href, atlas: new URL("./img/atlas.webp", import.meta.url).href };
+// ATLAS-INICIO (gerado por embutir-atlas.py; não editar à mão)
+const ATLAS = { w: 800, h: 487 };
+const RET = {"bia": [0, 0, 127, 191], "bia-feliz": [133, 0, 176, 186], "bia-curiosa": [315, 0, 127, 186], "cofre": [448, 0, 171, 178], "cofre-aberto": [0, 197, 202, 153], "maca": [208, 197, 101, 107], "banana": [315, 197, 107, 106], "uva": [428, 197, 94, 125], "laranja": [528, 197, 101, 99], "morango": [635, 197, 83, 93], "pera": [0, 356, 81, 125]};
+// ATLAS-FIM
+const spr = criarSprites(IMG.atlas, ATLAS.w, ATLAS.h, RET);
 
 const FRUTAS = ["maca", "banana", "uva", "laranja", "morango", "pera"];
 const nomeFruta = (f) => NOME_DESENHO[f].toLowerCase();
@@ -66,18 +76,28 @@ export function montar(palco, ctx) {
   const escolhido = guiada ? null : NIVEIS.find((n) => n.id === escolhaDaCrianca(ctx, "senha:nivel"));
   let nivel = guiada ? GUIADAS[guiada] : escolhido ?? sugerido ?? NIVEIS[0];
   let frutas, senha, candidatas, historico, atual, fim, vivo = true, repetindo = false;
+  // A cena nasce no leve e só troca para o ilustrado se as imagens chegarem em 0,8 s (ver `abrirIlustrado` no util).
+  const querIlustrado = visualIlustrado(ctx, "senha:visual");
+  let ilustrado = false;
+  // A Bia: contente; feliz quando o cofre abre; curiosa quando uma tentativa não acerta nenhuma fruta (isso também ajuda).
+  let clima = "contente";
+  const htmlBia = () => (ilustrado ? spr(clima === "feliz" ? "bia-feliz" : clima === "curiosa" ? "bia-curiosa" : "bia", 0.45) : arte("bia", 46));
 
   palco.innerHTML = `
     <section class="jg sn">
       ${faixa(arte("cofre", 54), "Senha", { ajustes: !guiada })}
       <p class="sn-nivel" id="sn-nivel"></p>
+      <div class="sn-cena${querIlustrado ? " carregando" : ""}">
+      <button type="button" class="sn-bia" aria-label="Bia, a tartaruga. Toque para ouvir a história do jogo."></button>
       <div class="sn-cofre" id="sn-cofre">
+        <div class="sn-cofre-ilu" id="sn-cofre-ilu" aria-hidden="true"></div>
         <div class="sn-porta">
           <p class="sn-porta-titulo" id="sn-porta-titulo">Sua tentativa</p>
           <div class="sn-atual" id="sn-atual" role="group" aria-labelledby="sn-porta-titulo"></div>
           <div class="sn-macaneta" aria-hidden="true"></div>
         </div>
         <div class="sn-dentro" id="sn-dentro" hidden></div>
+      </div>
       </div>
       <p class="sn-escolha" id="sn-escolha-titulo">Toque nas frutas para montar a senha:</p>
       <div class="sn-bandeja" id="sn-bandeja" role="group" aria-labelledby="sn-escolha-titulo" data-teclado=".sn-fruta"></div>
@@ -95,7 +115,13 @@ export function montar(palco, ctx) {
   const $ = (s) => palco.querySelector(s);
   const aviso = $("#sn-aviso");
   const ajustes = document.createElement("div");
-  ajustes.innerHTML = `<span class="rotulo">Tamanho da senha</span><div id="sn-niveis" data-nova-partida></div>`;
+  ajustes.innerHTML = `<span class="rotulo">Visual do jogo</span><div id="sn-visual" data-nova-partida></div>
+    <p class="sn-dica-visual">O ilustrado tem desenhos mais ricos e precisa de internet. O leve funciona sem internet e em celular mais simples.</p>
+    <span class="rotulo">Tamanho da senha</span><div id="sn-niveis" data-nova-partida></div>`;
+  escolhas(ajustes.querySelector("#sn-visual"), [["ilustrado", "Ilustrado"], ["leve", "Leve"]], querIlustrado ? "ilustrado" : "leve", (v) => {
+    guardarEscolha(ctx, "senha:visual", v);
+    ctx?.reiniciar?.();
+  });
   const jogo = prepararJogo(palco, {
     ctx, ajustes: guiada ? null : ajustes, tutorial: true,
     regras: `<ul>
@@ -143,13 +169,16 @@ export function montar(palco, ctx) {
     frutas = FRUTAS.slice(0, nivel.frutas);
     candidatas = todas(nivel.tam, frutas);
     senha = sortear(candidatas);
-    historico = []; atual = []; fim = false;
+    historico = []; atual = []; fim = false; clima = "contente";
     aviso.textContent = ""; aviso.className = "aviso";
     $("#sn-nivel").textContent = guiada ? "Cofre de treino" : `Senha de ${nivel.nome}`;
     desenhar();
   }
 
-  const fig = (f, tam = 40) => `<span class="sn-fig" aria-hidden="true">${arte(f, tam)}</span>`;
+  // Fruta: recorte pintado (escala igual para todas, para manter o tamanho de cada uma) ou desenho em código.
+  const fig = (f, tam = 40) => (ilustrado
+    ? `<span class="sn-fig pintada" style="width:${tam}px;height:${tam}px" aria-hidden="true">${spr(f, tam / 125)}</span>`
+    : `<span class="sn-fig" aria-hidden="true">${arte(f, tam)}</span>`);
 
   function desenhar() {
     // Tentativa atual: lugares numerados; tocar num lugar cheio tira a fruta.
@@ -174,6 +203,8 @@ export function montar(palco, ctx) {
       </li>`).join("");
     const cofre = $("#sn-cofre");
     cofre.classList.toggle("aberto", fim);
+    $("#sn-cofre-ilu").innerHTML = ilustrado ? spr(fim ? "cofre-aberto" : "cofre", 0.55) : "";
+    $(".sn-bia").innerHTML = htmlBia();
     $("#sn-dentro").hidden = !fim;
     $("#sn-dentro").innerHTML = fim ? `<span class="sn-dentro-titulo">A senha era:</span>${senha.map((f) => fig(f, 44)).join("")}` : "";
     $("#sn-tentar").disabled = atual.length < nivel.tam || fim || repetindo;
@@ -191,6 +222,7 @@ export function montar(palco, ctx) {
     const p = pistas(senha, atual);
     historico.push({ tentativa: [...atual], ...p });
     atual = [];
+    clima = p.lugar === 0 && p.fora === 0 ? "curiosa" : "contente";
     if (p.lugar === nivel.tam) return terminar();
     som(p.lugar || p.fora ? "ponto" : "toque");
     aviso.className = "aviso";
@@ -200,7 +232,7 @@ export function montar(palco, ctx) {
   }
 
   function terminar() {
-    fim = true;
+    fim = true; clima = "feliz";
     const n = historico.length;
     const passos = historico.map((h) => ({ ...h }));
     ctx?.definirReplay?.(() => mostrarPartida(passos));
@@ -209,6 +241,7 @@ export function montar(palco, ctx) {
     som("vitoria");
     if (n <= nivel.meta) festa();
     if (!guiada && nivel.tam === 4) ctx?.conquistar?.("senha-cofre");
+    if (!guiada && dicas.usados === 0) ctx?.conquistar?.("senha-sozinha");
     ctx?.fala("resolveu");
     aviso.className = "aviso certo";
     aviso.textContent = `O cofre abriu em ${n} ${n === 1 ? "tentativa" : "tentativas"}!`;
@@ -254,7 +287,7 @@ export function montar(palco, ctx) {
   $("#sn-bandeja").addEventListener("click", (e) => {
     const b = e.target.closest(".sn-fruta");
     if (!b || b.disabled || fim || repetindo || atual.length >= nivel.tam) return;
-    atual.push(b.dataset.f);
+    atual.push(b.dataset.f); clima = "contente";
     som("toque");
     desenhar();
     if (atual.length === nivel.tam) $("#sn-tentar").focus({ preventScroll: true });
@@ -275,6 +308,15 @@ export function montar(palco, ctx) {
     ajustes.querySelectorAll("#sn-niveis button").forEach((b, i) => b.classList.toggle("sugerida", NIVEIS[i] === sugerido));
   }
 
+  $(".sn-bia").hidden = !ctx?.historia;
+  $(".sn-bia").addEventListener("click", () => { som("nota", 1); jogo.abrirHistoria(); });
+  if (querIlustrado) {
+    abrirIlustrado([IMG.cenario, IMG.atlas], {
+      vivo: () => vivo,
+      aplicar: () => { ilustrado = true; $(".sn-cena").classList.add("ilustrado"); if (frutas) desenhar(); },
+      revelar: () => $(".sn-cena").classList.remove("carregando"),
+    });
+  }
   novaSenha();
   setTimeout(() => {
     if (guiada === 3) ctx?.dizer?.("Agora tente sozinho. Use as pistas de cada tentativa.");

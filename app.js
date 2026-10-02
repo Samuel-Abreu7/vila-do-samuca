@@ -470,8 +470,8 @@ const CUIDADOS = [
     "Toda curiosidade e todo fato histórico são conferidos em fonte antes de entrar.",
     "Jogo com dono (marca registrada ou produto comercial) só entra numa versão nossa, com nome, desenhos e fases próprios.",
     "Os desenhos e as ilustrações foram criados para o portal, com ajuda de inteligência artificial, no mesmo traço do Samuca. Os arquivos da marca e as ilustrações levam credenciais de conteúdo (C2PA), que registram essa origem, e toda imagem que vem de fora tem a origem conferida antes de entrar.",
-    "As histórias do Bento, o texugo, e do Tomé, o bisão, são narradas por vozes de inteligência artificial, que não imitam nenhuma pessoa. Elas só tocam quando a criança pede, têm o botão Pular e, sem internet, quem lê é a voz do próprio celular.",
-    "Os jogos da Raposa e do Elevador têm dois modelos: o ilustrado, mais rico, que precisa de internet, e o leve, que funciona sem internet e em celular mais simples. A criança ou um adulto escolhe nos ajustes.",
+    "Cada jogo tem um amigo do Samuca que conta a história dele (o Bento, o Tomé, o Gui, o Tito, a Zuzu e a Bia). As histórias são narradas por vozes de inteligência artificial, que não imitam nenhuma pessoa, e os fatos são conferidos em fonte antes de entrar. Elas só tocam quando a criança pede, têm o botão Pular e, sem internet, quem lê é a voz do próprio celular.",
+    "Todos os jogos têm dois modelos: o ilustrado, mais rico, que precisa de internet, e o leve, que funciona sem internet e em celular mais simples. Em celular simples, ou se a internet estiver lenta, o jogo abre sozinho no modelo leve. A criança ou um adulto escolhe nos ajustes.",
     "Jogos de origem indígena citam a origem com respeito.",
   ] },
 ];

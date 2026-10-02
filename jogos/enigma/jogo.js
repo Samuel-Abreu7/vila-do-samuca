@@ -3,9 +3,19 @@
 // As pessoas são os apelidos das crianças da família. Cada enigma é gerado na hora e conferido
 // por um resolvedor que só usa raciocínios que uma criança consegue seguir: então tem uma
 // resposta só, e dá para chegar nela pensando, sem chutar.
-import { carregarEstilo, escolhas, faixa, som, festa, prepararJogo, dicasEmDegraus, repetir, esc, escolhaDaCrianca, guardarEscolha, botaoOuvir } from "../../util.js";
+import { carregarEstilo, escolhas, faixa, som, festa, prepararJogo, dicasEmDegraus, repetir, esc, escolhaDaCrianca, guardarEscolha, botaoOuvir, visualIlustrado, abrirIlustrado, criarSprites } from "../../util.js";
 import { arte, icone } from "../../arte.js";
 import { criancas } from "../../perfis.js";
+
+// ---------- Modelo ilustrado (imagens geradas por IA, assinadas pela vila) ----------
+// Escrivaninha pintada ao redor do caderno, carimbos pintados de ✓ e ✕ nas casas e o Bento (texugo) detetive, que
+// reage. O caderno e as tabelas continuam em HTML (o número de pessoas e pistas muda a cada enigma).
+const IMG = { cenario: new URL("./img/cenario.webp", import.meta.url).href, atlas: new URL("./img/atlas.webp", import.meta.url).href };
+// ATLAS-INICIO (gerado por embutir-atlas.py; não editar à mão)
+const ATLAS = { w: 640, h: 389 };
+const RET = {"bento-detetive": [0, 0, 159, 220], "bento-feliz": [165, 0, 225, 221], "bento-preocupado": [396, 0, 198, 220], "marca-certo": [0, 227, 159, 154], "marca-nao": [165, 227, 161, 156]};
+// ATLAS-FIM
+const spr = criarSprites(IMG.atlas, ATLAS.w, ATLAS.h, RET);
 
 // Cada categoria tem um verbo, para as pistas soarem como frases de verdade.
 const CATEGORIAS = [
@@ -188,17 +198,26 @@ export function montar(palco, ctx) {
   let nivel = guiada ? GUIADAS[guiada] : escolhido ?? sugerido ?? NIVEIS[0];
   let modo = "nao";
   let pz, est, enganos, fim, marcas = [], riscadas = new Set(), vivo = true, repetindo = false;
+  // A cena nasce no leve e só troca para o ilustrado se as imagens chegarem em 0,8 s (ver `abrirIlustrado` no util).
+  const querIlustrado = visualIlustrado(ctx, "enigma:visual");
+  let ilustrado = false;
+  // O Bento: atento; feliz quando o caso fecha; preocupado, sem bronca, depois de um engano.
+  let clima = "contente";
+  const htmlBento = () => (ilustrado ? spr(clima === "feliz" ? "bento-feliz" : clima === "preocupado" ? "bento-preocupado" : "bento-detetive", 0.4) : arte("bento", 46));
 
   palco.innerHTML = `
     <section class="jg en">
       ${faixa(arte("lupa", 54), "Enigma de lógica em grade", { ajustes: !guiada })}
       <p class="en-nivel" id="en-nivel"></p>
+      <div class="en-cena${querIlustrado ? " carregando" : ""}">
+      <button type="button" class="en-bento" aria-label="Bento, o texugo detetive. Toque para ouvir a história do jogo."></button>
       <div class="en-caderno">
         <div class="en-pistas-caixa">
           <p class="en-titulo" id="en-titulo">Pistas <span class="en-titulo-nota">(toque numa pista para riscar)</span></p>
           <ol class="en-pistas" id="en-pistas"></ol>
         </div>
         <div class="en-tabelas" id="en-tabelas" data-teclado=".en-cel"></div>
+      </div>
       </div>
       <p class="en-marcando" id="en-marcando-titulo">Ao tocar numa casa da tabela, marcar:</p>
       <div class="en-modos" role="group" aria-labelledby="en-marcando-titulo">
@@ -220,7 +239,13 @@ export function montar(palco, ctx) {
   $("#en-titulo").append(botaoOuvir(() => pz.pistas.map((_, k) => `Pista ${k + 1}. ${textoPista(pz, k)}`).join(" "), "Ouvir as pistas"));
 
   const ajustes = document.createElement("div");
-  ajustes.innerHTML = `<span class="rotulo">Aprenda a jogar: escolha o nível</span><div id="en-niveis" data-nova-partida></div>`;
+  ajustes.innerHTML = `<span class="rotulo">Visual do jogo</span><div id="en-visual" data-nova-partida></div>
+    <p class="en-dica-visual">O ilustrado tem desenhos mais ricos e precisa de internet. O leve funciona sem internet e em celular mais simples.</p>
+    <span class="rotulo">Aprenda a jogar: escolha o nível</span><div id="en-niveis" data-nova-partida></div>`;
+  escolhas(ajustes.querySelector("#en-visual"), [["ilustrado", "Ilustrado"], ["leve", "Leve"]], querIlustrado ? "ilustrado" : "leve", (v) => {
+    guardarEscolha(ctx, "enigma:visual", v);
+    ctx?.reiniciar?.();
+  });
   const jogo = prepararJogo(palco, {
     ctx, ajustes: guiada ? null : ajustes, tutorial: true,
     regras: `<ul>
@@ -273,7 +298,7 @@ export function montar(palco, ctx) {
   function novoEnigma() {
     pz = gerar(nivel, nomesDaFamilia(ctx)) || gerar(NIVEIS[0], nomesDaFamilia(ctx));
     est = estadoVazio(pz);
-    enganos = 0; fim = false; marcas = []; riscadas = new Set();
+    enganos = 0; fim = false; marcas = []; riscadas = new Set(); clima = "contente";
     aviso.textContent = ""; aviso.className = "aviso";
     $("#en-nivel").textContent = guiada ? "Enigma de treino" : `${nivel.nome} de 5`;
     desenhar();
@@ -294,12 +319,13 @@ export function montar(palco, ctx) {
           const v = est[c][p][i];
           const estado = v === 1 ? "sim" : v === -1 ? "não" : "ainda não marcado";
           return `<td><button type="button" class="en-cel ${v === 1 ? "sim" : v === -1 ? "nao" : ""}" data-c="${c}" data-p="${p}" data-i="${i}"
-            aria-label="${esc(`${nome} e ${nomeItem(it)}, tabela ${cat.nome}: ${estado}`)}" ${fim || repetindo ? "disabled" : ""}>${v === 1 ? "✓" : v === -1 ? "✕" : ""}</button></td>`;
+            aria-label="${esc(`${nome} e ${nomeItem(it)}, tabela ${cat.nome}: ${estado}`)}" ${fim || repetindo ? "disabled" : ""}>${ilustrado && v ? spr(v === 1 ? "marca-certo" : "marca-nao", 0.17) : v === 1 ? "✓" : v === -1 ? "✕" : ""}</button></td>`;
         }).join("")}</tr>`).join("")}</tbody>
       </table>`).join("");
     palco.querySelectorAll(".en-modo").forEach((b) => { b.setAttribute("aria-pressed", String(b.dataset.modo === modo)); b.disabled = repetindo; });
     $("#en-desfazer").disabled = fim || repetindo || !marcas.length;
     $("#en-novo").disabled = repetindo;
+    $(".en-bento").innerHTML = htmlBento();
     $("#en-dica").hidden = fim || repetindo;
     const botaoAjustes = palco.querySelector('[data-faixa="ajustes"]');
     if (botaoAjustes) botaoAjustes.disabled = repetindo;
@@ -318,7 +344,7 @@ export function montar(palco, ctx) {
   const completo = () => pz.sol.every((s, c) => s.every((i, p) => est[c][p][i] === 1));
 
   function terminar() {
-    fim = true;
+    fim = true; clima = "feliz";
     const passos = [...marcas];
     ctx?.definirReplay?.(() => mostrarSolucao(passos));
     const placar = Math.max(0.5, (enganos === 0 ? 1 : enganos <= 2 ? 0.8 : 0.6) - dicas.usados * 0.04);
@@ -326,6 +352,7 @@ export function montar(palco, ctx) {
       `Desvendou um enigma de ${pz.pessoas.length} pessoas e ${pz.cats.length === 1 ? "uma tabela" : `${pz.cats.length} tabelas`}${enganos === 0 ? " sem nenhum engano" : ""}.`);
     som("vitoria");
     if (enganos === 0) { festa(); if (!guiada) ctx?.conquistar?.("enigma-caso"); }
+    if (!guiada && dicas.usados === 0) ctx?.conquistar?.("enigma-sozinho");
     ctx?.fala("resolveu");
     aviso.className = "aviso certo";
     aviso.textContent = enganos === 0 ? "Caso resolvido, sem nenhum engano!" : `Caso resolvido! Foram ${enganos} ${enganos > 1 ? "enganos" : "engano"}.`;
@@ -352,13 +379,14 @@ export function montar(palco, ctx) {
     }
     const certo = (pz.sol[c][p] === i) === (v === 1);
     if (!certo) {
-      enganos += 1;
+      enganos += 1; clima = "preocupado";
       som("erro");
       aviso.className = "aviso erro";
       aviso.textContent = `Isso não bate com as pistas. Releia o que elas dizem sobre ${pz.pessoas[p]}.`;
       desenhar();
       return;
     }
+    clima = "contente";
     est[c][p][i] = v;
     marcas.push([c, p, i, v]);
     som(v === 1 ? "ponto" : "toque");
@@ -395,6 +423,15 @@ export function montar(palco, ctx) {
     ajustes.querySelectorAll("#en-niveis button").forEach((b, i) => b.classList.toggle("sugerida", NIVEIS[i] === sugerido));
   }
 
+  $(".en-bento").hidden = !ctx?.historia;
+  $(".en-bento").addEventListener("click", () => { som("nota", 1); jogo.abrirHistoria(); });
+  if (querIlustrado) {
+    abrirIlustrado([IMG.cenario, IMG.atlas], {
+      vivo: () => vivo,
+      aplicar: () => { ilustrado = true; $(".en-cena").classList.add("ilustrado"); if (pz) desenhar(); },
+      revelar: () => $(".en-cena").classList.remove("carregando"),
+    });
+  }
   novoEnigma();
   setTimeout(() => {
     if (guiada === 3) ctx?.dizer?.("Agora tente sozinho. Comece pelas pistas que dizem \"não\".");

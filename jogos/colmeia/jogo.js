@@ -1,7 +1,7 @@
 // Colmeia Lógica — inspirado na mecânica de Hexcells (Matthew Brown, 2014); nome, arte e fases nossos.
 // Cada favo tem mel ou está vazio. Um favo vazio mostra quantos vizinhos têm mel.
 // Toda colmeia gerada é conferida por um resolvedor: dá para terminar só pensando, sem chutar.
-import { carregarEstilo, escolhas, ler, escolhaDaCrianca, guardarEscolha, faixa, som, festa, prepararJogo, sortear, dicasEmDegraus, repetir } from "../../util.js";
+import { carregarEstilo, escolhas, ler, escolhaDaCrianca, guardarEscolha, faixa, som, festa, prepararJogo, sortear, dicasEmDegraus, repetir, visualIlustrado, abrirIlustrado, criarSprites } from "../../util.js";
 import { arte, icone } from "../../arte.js";
 
 const VIZINHOS = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
@@ -109,6 +109,21 @@ function gerarUma(nivel) {
   return null;
 }
 
+// ---------- Modelo ilustrado (imagens geradas por IA, assinadas pela vila) ----------
+// Prado pintado de fundo, favos pintados (tampado com cera, cheio de mel com uma gota, vazio e fundo: três formas
+// e claridades diferentes, sem depender só da cor) e a Zuzu, abelha, que reage. Duas versões à escolha.
+const IMG = { cenario: new URL("./img/cenario.webp", import.meta.url).href, atlas: new URL("./img/atlas.webp", import.meta.url).href };
+// ATLAS-INICIO (gerado por embutir-atlas.py; não editar à mão)
+const ATLAS = { w: 640, h: 330 };
+const RET = {"zuzu": [0, 0, 166, 181], "zuzu-feliz": [172, 0, 181, 182], "zuzu-preocupada": [359, 0, 166, 181], "favo-tampado": [0, 188, 129, 135], "favo-mel": [135, 188, 123, 136], "favo-vazio": [264, 188, 123, 136]};
+// ATLAS-FIM
+const spr = criarSprites(IMG.atlas, ATLAS.w, ATLAS.h, RET);
+// Recorte do atlas dentro de um SVG: um <svg> aninhado com viewBox no retângulo da figura.
+const sprSvg = (nome, x, y, w, h) => {
+  const [rx, ry, rw, rh] = RET[nome];
+  return `<svg x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}" viewBox="${rx} ${ry} ${rw} ${rh}" preserveAspectRatio="xMidYMid meet" overflow="hidden"><image href="${IMG.atlas}" width="${ATLAS.w}" height="${ATLAS.h}"/></svg>`;
+};
+
 export function montar(palco, ctx) {
   carregarEstilo(new URL("./jogo.css", import.meta.url));
   const guiada = ctx?.tutorial || 0;
@@ -118,12 +133,21 @@ export function montar(palco, ctx) {
   let nivel = guiada ? GUIADAS[guiada] : escolhido ?? sugerido ?? NIVEIS.find((n) => n.id === ler("colmeia:nivel", "pequena")) ?? NIVEIS[0];
   let modo = "mel";
   let mapa, conhecidos, enganos, fim, novo = null, marcas = [], vivo = true, repetindo = false;
+  // A cena nasce no leve e só troca para o ilustrado se as imagens chegarem em 0,8 s (ver `abrirIlustrado` no util).
+  const querIlustrado = visualIlustrado(ctx, "colmeia:visual");
+  let ilustrado = false;
+  // A Zuzu: contente; feliz quando a colmeia fecha; preocupada, sem bronca, depois de um engano.
+  let clima = "contente";
+  const htmlZuzu = () => (ilustrado ? spr(clima === "feliz" ? "zuzu-feliz" : clima === "preocupado" ? "zuzu-preocupada" : "zuzu", 0.4) : arte("zuzu", 46));
 
   palco.innerHTML = `
     <section class="jg cm">
       ${faixa(arte("colmeia", 54), "Colmeia Lógica", { ajustes: !guiada })}
       <p class="cm-nivel" id="cm-nivel"></p>
-      <div class="cm-favo-quadro"><svg id="cm-svg" role="group" aria-label="Colmeia" data-teclado=".cm-favo.oculto"></svg></div>
+      <div class="cm-cena${querIlustrado ? " carregando" : ""}">
+        <button type="button" class="cm-zuzu" aria-label="Zuzu, a abelha. Toque para ouvir a história do jogo."></button>
+        <div class="cm-favo-quadro"><svg id="cm-svg" role="group" aria-label="Colmeia" data-teclado=".cm-favo.oculto"></svg></div>
+      </div>
       <div class="cm-contas" id="cm-contas"></div>
       <p class="cm-marcando" id="cm-marcando-titulo">Ao tocar num favo, marcar como:</p>
       <div class="cm-modos" role="group" aria-labelledby="cm-marcando-titulo">
@@ -142,7 +166,13 @@ export function montar(palco, ctx) {
   const svg = $("#cm-svg");
 
   const ajustes = document.createElement("div");
-  ajustes.innerHTML = `<span class="rotulo">Tamanho da colmeia</span><div id="cm-tam" data-nova-partida></div>`;
+  ajustes.innerHTML = `<span class="rotulo">Visual do jogo</span><div id="cm-visual" data-nova-partida></div>
+    <p class="cm-dica-visual">O ilustrado tem desenhos mais ricos e precisa de internet. O leve funciona sem internet e em celular mais simples.</p>
+    <span class="rotulo">Tamanho da colmeia</span><div id="cm-tam" data-nova-partida></div>`;
+  escolhas(ajustes.querySelector("#cm-visual"), [["ilustrado", "Ilustrado"], ["leve", "Leve"]], querIlustrado ? "ilustrado" : "leve", (v) => {
+    guardarEscolha(ctx, "colmeia:visual", v);
+    ctx?.reiniciar?.();
+  });
   const jogo = prepararJogo(palco, {
     ctx, ajustes: guiada ? null : ajustes, tutorial: true,
     regras: `<ul>
@@ -203,7 +233,7 @@ export function montar(palco, ctx) {
     // O gerador quase sempre acha uma colmeia; se em raros casos não achar, tenta de novo e, por fim, a pequena.
     mapa = gerar(nivel) || gerar(nivel) || gerar(NIVEIS[0]);
     conhecidos = new Map(mapa.iniciais);
-    enganos = 0; fim = false; novo = null; marcas = [];
+    enganos = 0; fim = false; novo = null; marcas = []; clima = "contente";
     aviso.textContent = ""; aviso.className = "aviso";
     $("#cm-nivel").textContent = guiada ? "Colmeia de treino" : `Colmeia ${nivel.nome.toLowerCase()}`;
     desenhar();
@@ -241,10 +271,10 @@ export function montar(palco, ctx) {
         : t === "vazio" ? `Favo vazio, ${onde}: ${n} ${n === 1 ? "vizinho tem" : "vizinhos têm"} mel`
         : `Favo escondido, ${onde}. Toque para marcar: ${modo === "mel" ? "tem mel" : "vazio"}`;
       h += `<g class="cm-favo ${classe}${extra}" data-k="${f.k}" ${t ? `role="img"` : `tabindex="0" role="button"`} aria-label="${rotulo}">
-        <polygon points="${hex(x, y, TAM - 1.2)}"/>`;
-      if (!t) h += `<polygon class="tampa" points="${hex(x, y, TAM - 6)}"/>`;
+        ${ilustrado ? sprSvg(t === "mel" ? "favo-mel" : t === "vazio" ? "favo-vazio" : "favo-tampado", x - (W - 1) / 2, y - (TAM - 0.6), W - 1, 2 * (TAM - 0.6)) : ""}<polygon points="${hex(x, y, TAM - 1.2)}"/>`;
+      if (!t && !ilustrado) h += `<polygon class="tampa" points="${hex(x, y, TAM - 6)}"/>`;
       if (t === "vazio") h += `<text x="${x}" y="${y}">${n}</text>`;
-      if (t === "mel") h += `<g transform="translate(${x - 9} ${y - 9}) scale(.18)">${arte("gota", 100).replace(/^<svg[^>]*>|<\/svg>$/g, "")}</g>`;
+      if (t === "mel" && !ilustrado) h += `<g transform="translate(${x - 9} ${y - 9}) scale(.18)">${arte("gota", 100).replace(/^<svg[^>]*>|<\/svg>$/g, "")}</g>`;
       h += `</g>`;
     }
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-largura / 2} ${-altura / 2} ${largura} ${altura}">${h}</svg>`;
@@ -260,19 +290,21 @@ export function montar(palco, ctx) {
     palco.querySelectorAll(".cm-modo").forEach((b) => { b.setAttribute("aria-pressed", String(b.dataset.modo === modo)); b.disabled = repetindo; });
     $("#cm-dica").hidden = fim || repetindo;
     $("#cm-nova").disabled = repetindo;
+    $(".cm-zuzu").innerHTML = htmlZuzu();
     const botaoAjustes = palco.querySelector('[data-faixa="ajustes"]');
     if (botaoAjustes) botaoAjustes.disabled = repetindo; // trocar o desafio no meio da repetição misturaria tudo
     dicas.reaplicar();
   }
 
   function terminar() {
-    fim = true;
+    fim = true; clima = "feliz";
     const placar = Math.max(0.5, (enganos === 0 ? 1 : enganos <= 2 ? 0.8 : 0.6) - dicas.usados * 0.04);
     const passos = [...marcas];
     ctx?.definirReplay?.(() => mostrarSolucao(passos));
     ctx?.registrarSolo(nivel.dificuldade, placar, `Descobriu todos os favos de uma colmeia ${nivel.nome.toLowerCase()}${enganos === 0 ? " sem nenhum engano" : ""}.`);
     som("vitoria");
     if (enganos === 0) { festa(); if (!guiada) ctx?.conquistar?.("colmeia-certeira"); }
+    if (!guiada && dicas.usados === 0) ctx?.conquistar?.("colmeia-sozinha");
     if (nivel.id === "gigante") ctx?.conquistar?.("colmeia-gigante");
     ctx?.fala("resolveu");
     aviso.className = "aviso certo";
@@ -297,7 +329,7 @@ export function montar(palco, ctx) {
     if (fim || repetindo || conhecidos.has(k)) return;
     const certo = mapa.mel.has(k) ? "mel" : "vazio";
     if (modo !== certo) {
-      enganos += 1;
+      enganos += 1; clima = "preocupado";
       som("erro");
       aviso.className = "aviso erro";
       aviso.textContent = modo === "mel"
@@ -307,6 +339,7 @@ export function montar(palco, ctx) {
       desenhar();
       return;
     }
+    clima = "contente";
     conhecidos.set(k, certo);
     marcas.push([k, certo]);
     novo = k;
@@ -332,6 +365,15 @@ export function montar(palco, ctx) {
     ajustes.querySelectorAll("#cm-tam button").forEach((b, i) => b.classList.toggle("sugerida", NIVEIS[i] === sugerido));
   }
 
+  $(".cm-zuzu").hidden = !ctx?.historia;
+  $(".cm-zuzu").addEventListener("click", () => { som("nota", 1); jogo.abrirHistoria(); });
+  if (querIlustrado) {
+    abrirIlustrado([IMG.cenario, IMG.atlas], {
+      vivo: () => vivo,
+      aplicar: () => { ilustrado = true; $(".cm-cena").classList.add("ilustrado"); if (mapa) desenhar(); },
+      revelar: () => $(".cm-cena").classList.remove("carregando"),
+    });
+  }
   novaColmeia();
   setTimeout(() => {
     if (guiada === 3) ctx?.dizer?.("Agora tente sozinho. Só marque quando os números provarem.");
