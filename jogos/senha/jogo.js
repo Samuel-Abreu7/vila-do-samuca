@@ -1,4 +1,4 @@
-// Senha — da brincadeira tradicional de papel e lápis "Touros e vacas" (domínio público).
+// Cofre das Frutas (antes "Senha") — da brincadeira tradicional de papel e lápis "Touros e vacas" (domínio público).
 // O Samuca guarda no cofre uma senha de frutas diferentes; cada tentativa recebe duas pistas:
 // quantas frutas estão no lugar certo e quantas estão na senha, mas em outro lugar.
 // Sem limite de tentativas (nada de "game over"). Nada de pinos coloridos nem tabuleiro de
@@ -85,7 +85,7 @@ export function montar(palco, ctx) {
 
   palco.innerHTML = `
     <section class="jg sn">
-      ${faixa(arte("cofre", 54), "Senha", { ajustes: !guiada })}
+      ${faixa(arte("cofre", 54), "Cofre das Frutas", { ajustes: !guiada })}
       <p class="sn-nivel" id="sn-nivel"></p>
       <div class="sn-cena${querIlustrado ? " carregando" : ""}">
       <button type="button" class="sn-bia" aria-label="Bia, a tartaruga. Toque para ouvir a história do jogo."></button>
@@ -171,7 +171,7 @@ export function montar(palco, ctx) {
     senha = sortear(candidatas);
     historico = []; atual = []; fim = false; clima = "contente";
     aviso.textContent = ""; aviso.className = "aviso";
-    $("#sn-nivel").textContent = guiada ? "Cofre de treino" : `Senha de ${nivel.nome}`;
+    $("#sn-nivel").textContent = guiada ? "Cofre de treino" : `Cofre de ${nivel.nome}`;
     desenhar();
   }
 
@@ -275,7 +275,7 @@ export function montar(palco, ctx) {
     }
     const linha = (h, n) => `<tr><td>${n + 1}</td><td>${h.tentativa.map(nomeFruta).join(", ")}</td><td>${textoPistas(h)}</td></tr>`;
     return {
-      titulo: `Senha (${nivel.nome})`,
+      titulo: `Cofre das Frutas (${nivel.nome})`,
       html: `<p>O Samuca trancou uma senha de ${nivel.tam} frutas diferentes, escolhidas entre: ${frutas.map(nomeFruta).join(", ")}.
         Cada tentativa abaixo recebeu pistas. Descubra a senha!</p>
         <table><tr><th>Nº</th><th>Tentativa</th><th>Pistas</th></tr>${hist.map(linha).join("")}</table>

@@ -11,7 +11,7 @@ const sorriso = (y = 64, l = 8, cor = "#1b1f3a") => `<path d="M${50 - l} ${y} q$
 const bochechas = (y = 58) => `<circle cx="28" cy="${y}" r="5" fill="#ff8a8e" opacity=".55"/><circle cx="72" cy="${y}" r="5" fill="#ff8a8e" opacity=".55"/>`;
 
 const DESENHOS = {
-  // ---------- Senha: frutas (cada uma com formato próprio, não só cor), cofre e chave ----------
+  // ---------- Cofre das Frutas: frutas (cada uma com formato próprio, não só cor), cofre e chave ----------
   uva: `${sombra}<path d="M50 20 q2 -10 10 -14" stroke="#7a4a24" stroke-width="5" fill="none" stroke-linecap="round"/>
     <path d="M54 14 q14 -6 20 4 q-12 6 -20 -4 Z" fill="#3fbf6a"/>
     ${[[38, 30], [62, 30], [50, 42], [28, 46], [72, 46], [40, 58], [60, 58], [50, 72]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="11" fill="#8a4fd6" stroke="#5e2fa8" stroke-width="2"/>`).join("")}
