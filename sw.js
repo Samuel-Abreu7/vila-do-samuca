@@ -1,6 +1,6 @@
 // Guarda o portal inteiro no aparelho para funcionar sem internet.
 // Jogo novo: acrescente os arquivos dele em ARQUIVOS e suba a versão abaixo.
-const CACHE = "enigmas-v41";
+const CACHE = "enigmas-v42";
 const ARQUIVOS = [
   "./",
   "./index.html",

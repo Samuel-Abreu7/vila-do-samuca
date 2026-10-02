@@ -132,9 +132,9 @@ function vibrar(tipo) {
 }
 // Modo leve (celular antigo) e animações lentas (acessibilidade) vêm de classes no <body>.
 export const modoLeve = () => document.body.classList.contains("leve");
-const fatorLento = () => (document.body.classList.contains("lento") ? 1.8 : 1);
+export const fatorLento = () => (document.body.classList.contains("lento") ? 1.8 : 1);
 
-const semMovimento = () => matchMedia("(prefers-reduced-motion: reduce)").matches || modoLeve();
+export const semMovimento = () => matchMedia("(prefers-reduced-motion: reduce)").matches || modoLeve();
 
 // ---------- Movimento de peças (técnica FLIP) ----------
 // Antes de redesenhar: const antes = posicoes(raiz, "[data-peca]").

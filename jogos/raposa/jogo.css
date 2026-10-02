@@ -84,3 +84,41 @@
 .rp-peca:active:not(:disabled) .rp-figura { translate: 0 3px; }
 .rp-peca:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; border-radius: 14px; }
 @media (max-width: 380px) { .rp-arvore { width: 48px; height: 64px; } .rp-gente { gap: 8px; } }
+
+/* ---------- Melhorias de 01/10/2026 (inspiradas no protótipo do dono) ----------
+   Tudo parado até a criança tocar: remos e rastro só durante a travessia, pulinho uma vez. */
+/* Beira do rio: juncos e vitórias-régias, longe do caminho do barco */
+.rp-junco { position: absolute; width: 30px; height: 46px; }
+.rp-junco.esquerda { left: 4px; top: 4px; }
+.rp-junco.direita { right: 6px; bottom: 2px; }
+.rp-vitoria { position: absolute; width: 34px; height: 20px; }
+.rp-vitoria.um { left: 10px; top: 58%; }
+.rp-vitoria.dois { right: 14px; top: 22%; }
+/* Remos dos dois lados do barqueiro */
+.rp-remo { position: absolute; bottom: 4px; width: 16px; height: 56px; transform-origin: 50% 8%; z-index: -1; }
+.rp-remo.esquerdo { left: 6px; transform: rotate(28deg); }
+.rp-remo.direito { right: 6px; transform: rotate(-28deg); }
+/* Rastro na água atrás do barco */
+.rp-rastro {
+  position: absolute; left: 50%; translate: -50% 0; width: 150px; height: 18px; pointer-events: none;
+  border: 3px solid rgba(220,242,255,.8); border-color: rgba(220,242,255,.8) transparent transparent; border-radius: 50%;
+}
+/* Susto: um "!" em quem corre perigo (aparece só depois do lance que deu problema) */
+.rp-susto {
+  position: absolute; top: -10px; right: -12px; display: grid; place-items: center;
+  width: 26px; height: 26px; border-radius: 50%; font: 900 1rem var(--titulo);
+  background: #fff4d6; color: #7a4a00; border: 2px solid #e2b04a; box-shadow: 0 2px 0 rgba(0,0,0,.2);
+}
+/* Placa da chegada com as figurinhas de quem já chegou */
+#rp-chegada { display: flex; align-items: center; gap: 6px; padding: 3px 10px; }
+.rp-chegaram { display: inline-flex; gap: 2px; }
+.rp-mini { position: relative; display: inline-grid; opacity: .5; filter: grayscale(1) brightness(1.6); }
+.rp-mini.chegou { opacity: 1; filter: none; }
+.rp-mini.chegou::after {
+  content: "✓"; position: absolute; right: -4px; bottom: -4px; display: grid; place-items: center;
+  width: 12px; height: 12px; border-radius: 50%; font-size: 9px; line-height: 1; background: var(--verde, #3fae47); color: #fff;
+}
+/* A placa da chegada ficou maior: mais espaço embaixo, para não cobrir o nome de quem chegou */
+.rp-margem[data-lado="baixo"] { padding-bottom: 56px; }
+#rp-chegada { white-space: nowrap; bottom: 8px; }
+#rp-chegada b { font-weight: 400; }

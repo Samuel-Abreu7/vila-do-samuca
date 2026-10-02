@@ -1,7 +1,7 @@
 // Raposa, cordeiro e couve — Alcuíno de York, séc. VIII.
 // O barqueiro atravessa o rio levando no máximo um passageiro.
 // Não pode ficar sozinho, sem o barqueiro: raposa com cordeiro, cordeiro com couve.
-import { carregarEstilo, faixa, som, festa, prepararJogo, posicoes, mover, dicasEmDegraus, repetir } from "../../util.js";
+import { carregarEstilo, faixa, som, festa, prepararJogo, posicoes, mover, dicasEmDegraus, repetir, semMovimento, fatorLento } from "../../util.js";
 import { arte, icone } from "../../arte.js";
 
 const TODOS = [
@@ -10,8 +10,8 @@ const TODOS = [
   { id: "couve", nome: "Couve" },
 ];
 const PERIGOS = [
-  { a: "raposa", b: "cordeiro", texto: "A raposa ficou sozinha com o cordeiro, e o cordeiro levou um baita susto!" },
-  { a: "cordeiro", b: "couve", texto: "O cordeiro ficou sozinho com a couve e comeu tudinho!" },
+  { a: "raposa", b: "cordeiro", vitima: "cordeiro", texto: "A raposa ficou sozinha com o cordeiro, e o cordeiro levou um baita susto!" },
+  { a: "cordeiro", b: "couve", vitima: "couve", texto: "O cordeiro ficou sozinho com a couve e comeu tudinho!" },
 ];
 const outro = (lado) => (lado === "cima" ? "baixo" : "cima");
 const artigo = { raposa: "a raposa", cordeiro: "o cordeiro", couve: "a couve" };
@@ -61,6 +61,16 @@ const CENARIO_BAIXO = `<span class="rp-areia"></span>${CAIS}${ARBUSTO}`;
 const RIO = `<svg class="rp-ondas" viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true">
   <path d="M20 40 q12 -6 24 0 M120 64 q12 -6 24 0 M230 30 q12 -6 24 0 M60 120 q12 -6 24 0 M190 140 q12 -6 24 0 M250 96 q12 -6 24 0 M30 170 q12 -6 24 0"
     stroke="#bfe6ff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".55"/></svg>`;
+// Juncos e vitórias-régias, parados, nas beiradas do rio (longe do caminho do barco).
+const BEIRA_RIO = `<svg class="rp-junco esquerda" viewBox="0 0 40 60" aria-hidden="true"><path d="M10 60 Q8 30 12 6 M20 60 Q20 34 24 14 M30 60 Q32 38 28 22" stroke="#2f7d3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <rect x="9" y="8" width="6" height="16" rx="3" fill="#7a4a24"/><rect x="21" y="16" width="6" height="14" rx="3" fill="#8a5424"/></svg>
+  <svg class="rp-junco direita" viewBox="0 0 40 60" aria-hidden="true"><path d="M12 60 Q10 36 14 16 M24 60 Q26 30 22 8 M32 60 Q30 40 34 26" stroke="#2f7d3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <rect x="19" y="10" width="6" height="16" rx="3" fill="#7a4a24"/></svg>
+  <svg class="rp-vitoria um" viewBox="0 0 40 24" aria-hidden="true"><path d="M20 12 L38 9 A19 11 0 1 1 30 3 Z" fill="#4caf50"/><path d="M20 12 L36 8" stroke="#2e7d32" stroke-width="1.5"/><circle cx="12" cy="9" r="3.4" fill="#ffd1e6"/><circle cx="12" cy="9" r="1.4" fill="#ffc83d"/></svg>
+  <svg class="rp-vitoria dois" viewBox="0 0 40 24" aria-hidden="true"><path d="M20 12 L2 9 A19 11 0 1 0 10 3 Z" fill="#43a047"/><path d="M20 12 L4 8" stroke="#2e7d32" stroke-width="1.5"/></svg>`;
+// Remos: só se mexem durante a travessia, uma remada por vez, e param quando o barco encosta.
+const REMOS = `<svg class="rp-remo esquerdo" viewBox="0 0 20 70" aria-hidden="true"><rect x="8" y="0" width="4" height="50" rx="2" fill="#7a4a24"/><ellipse cx="10" cy="58" rx="7" ry="12" fill="#c98b4f" stroke="#7a4a24" stroke-width="2"/></svg>
+  <svg class="rp-remo direito" viewBox="0 0 20 70" aria-hidden="true"><rect x="8" y="0" width="4" height="50" rx="2" fill="#7a4a24"/><ellipse cx="10" cy="58" rx="7" ry="12" fill="#c98b4f" stroke="#7a4a24" stroke-width="2"/></svg>`;
 const CASCO = `<svg class="rp-casco" viewBox="0 0 220 90" preserveAspectRatio="none" aria-hidden="true">
   <path d="M4 30 H216 L196 82 Q190 88 182 88 H38 Q30 88 24 82 Z" fill="#a9682f"/>
   <path d="M4 30 H216 L211 44 H9 Z" fill="#c98b4f"/><path d="M14 58 H206 M20 72 H200" stroke="#7a4a24" stroke-width="3"/>
@@ -75,7 +85,7 @@ export function montar(palco, ctx) {
   const estadoInicial = () => ({ lado: Object.fromEntries(ids.map((id) => [id, "cima"])), barco: "cima", carga: null, travessias: 0 });
   let estado = estadoInicial();
   let historico = [];
-  let problema = null;
+  let problema = null, vitima = null;
   let vivo = true, repetindo = false;
 
   palco.innerHTML = `
@@ -87,9 +97,9 @@ export function montar(palco, ctx) {
           <span class="rp-aqui" aria-hidden="true">O barco está aqui</span>
           <div class="rp-gente"></div>
         </div>
-        <div class="rp-rio">${RIO}<div class="rp-barco" id="rp-barco"></div></div>
+        <div class="rp-rio">${RIO}${BEIRA_RIO}<div class="rp-barco" id="rp-barco"></div></div>
         <div class="rp-margem" data-lado="baixo" role="group" aria-label="Margem da bandeira, a chegada">
-          <span class="rp-placa">Chegada</span>${CENARIO_BAIXO}
+          <span class="rp-placa" id="rp-chegada"></span>${CENARIO_BAIXO}
           <span class="rp-aqui" aria-hidden="true">O barco está aqui</span>
           <span class="rp-meta">${arte("bandeira", 40)}</span>
           <div class="rp-gente"></div>
@@ -183,11 +193,11 @@ export function montar(palco, ctx) {
     const b = document.createElement("button");
     b.type = "button";
     b.dataset.peca = p.id;
-    b.innerHTML = `<span class="rp-figura">${arte(p.id, ondeEsta === "barco" ? 52 : 62)}</span><span class="rp-nome">${p.nome}</span>`;
+    b.innerHTML = `<span class="rp-figura">${arte(p.id, ondeEsta === "barco" ? 52 : 62)}${vitima === p.id ? '<span class="rp-susto" aria-hidden="true">!</span>' : ""}</span><span class="rp-nome">${p.nome}</span>`;
     b.disabled = repetindo || !(!problema && !venceu() && (ondeEsta === "barco" || estado.lado[p.id] === estado.barco));
     b.className = `rp-peca ${ondeEsta === "barco" ? "no-barco" : b.disabled ? "longe" : "pode"}`;
     b.setAttribute("aria-label", ondeEsta === "barco" ? `${p.nome}, no barco. Toque para descer.`
-      : b.disabled ? `${p.nome}, na outra margem, longe do barco.` : `${p.nome}. Toque para subir no barco.`);
+      : vitima === p.id ? `${p.nome}, em perigo.` : b.disabled ? `${p.nome}, na outra margem, longe do barco.` : `${p.nome}. Toque para subir no barco.`);
     b.addEventListener("click", () => {
       const antes = posicoes(cena, "[data-peca]");
       estado.carga = estado.carga === p.id ? null : p.id;
@@ -212,7 +222,12 @@ export function montar(palco, ctx) {
       }
       m.classList.toggle("com-barco", estado.barco === lado);
     }
-    barco.innerHTML = `${CASCO}<span class="rp-barqueiro" role="img" aria-label="Barqueiro">${arte("barqueiro", 56)}</span>`;
+    barco.innerHTML = `${CASCO}${REMOS}<span class="rp-barqueiro" role="img" aria-label="Barqueiro">${arte("barqueiro", 56)}</span>`;
+    // Placa da chegada: quantos já chegaram, com as figurinhas (✓ em quem chegou, não só a cor).
+    const chegaram = PERSONAGENS.filter((p) => estado.lado[p.id] === "baixo" && estado.carga !== p.id);
+    $("#rp-chegada").innerHTML = `Chegada <span class="rp-chegaram">${PERSONAGENS.map((p) =>
+      `<span class="rp-mini ${chegaram.includes(p) ? "chegou" : ""}">${arte(p.id, 24)}</span>`).join("")}</span>
+      <span class="so-leitor">${chegaram.length} de ${PERSONAGENS.length} chegaram</span><b aria-hidden="true">${chegaram.length} de ${PERSONAGENS.length}</b>`;
     if (estado.carga) barco.appendChild(peca(PERSONAGENS.find((p) => p.id === estado.carga), "barco"));
     barco.dataset.lado = estado.barco;
 
@@ -250,13 +265,18 @@ export function montar(palco, ctx) {
     const ficaram = PERSONAGENS.filter((p) => estado.lado[p.id] === saida).map((p) => p.id);
     const perigo = PERIGOS.find((x) => ficaram.includes(x.a) && ficaram.includes(x.b));
     problema = perigo ? perigo.texto : null;
+    vitima = perigo ? perigo.vitima : null;
+    const levou = historico.at(-1).carga;
+    remar(saida);
     desenhar();
     mover(cena, "[data-peca]", antes, { duracao: 700 });
+    if (levou && estado.barco === "baixo" && !problema) pular([levou], 700);
     if (problema) som("erro");
     else if (venceu()) {
       som("vitoria");
       const perfeito = estado.travessias === MINIMO;
       if (perfeito) { festa(); if (!fase) ctx?.conquistar?.("raposa-perfeita"); }
+      pular(ids, 1000);
       // Guarda a solução para "Mostrar como eu fiz".
       const passos = [...historico.map((e) => structuredClone(e)), structuredClone(estado)];
       ctx?.definirReplay?.(() => mostrarSolucao(passos));
@@ -267,6 +287,34 @@ export function montar(palco, ctx) {
     dicas.zerar();
   }
 
+  // Remada e rastro na água: só durante a travessia (resposta ao toque), e param sozinhos.
+  function remar(saida) {
+    if (semMovimento()) return;
+    const f = fatorLento(), duracao = 700 * f;
+    barco.style.transitionDuration = `${duracao}ms`;
+    requestAnimationFrame(() => barco.querySelectorAll(".rp-remo").forEach((r, i) => r.animate(
+      [{ rotate: "0deg" }, { rotate: `${i ? -28 : 28}deg` }, { rotate: "0deg" }],
+      { duration: duracao / 3, iterations: 3, easing: "ease-in-out" })));
+    const rio = $(".rp-rio");
+    const topo = saida === "cima" ? 30 : rio.clientHeight - 40;
+    for (let i = 0; i < 3; i++) {
+      const onda = document.createElement("span");
+      onda.className = "rp-rastro";
+      onda.style.top = `${topo + (saida === "cima" ? 1 : -1) * i * 16}px`;
+      rio.appendChild(onda);
+      onda.animate([{ opacity: 0, scale: ".6 .6" }, { opacity: .7, scale: "1 1", offset: .3 }, { opacity: 0, scale: "1.5 1.2" }],
+        { duration: 900 * f, delay: i * 180 * f, fill: "both" }).finished.then(() => onda.remove(), () => onda.remove());
+    }
+  }
+  // Pulinho de quem chegou: uma vez, depois que o barco encosta.
+  function pular(quem, atraso) {
+    if (semMovimento()) return;
+    const f = fatorLento();
+    quem.forEach((id, i) => cena.querySelector(`[data-peca="${id}"] .rp-figura`)?.animate(
+      [{ translate: "0 0" }, { translate: "0 -14px", offset: .4 }, { translate: "0 0" }],
+      { duration: 420 * f, delay: (atraso + i * 140) * f, easing: "ease-out" }));
+  }
+
   // Repete a solução da criança, viagem por viagem, em câmera lenta.
   async function mostrarSolucao(passos) {
     repetindo = true;
@@ -274,7 +322,8 @@ export function montar(palco, ctx) {
     ctx?.dizer?.("Olha só como foi, viagem por viagem!", "feliz");
     await repetir(passos, (e, i) => {
       const antes = posicoes(cena, "[data-peca]");
-      estado = structuredClone(e); problema = null;
+      if (e.barco !== estado.barco) remar(estado.barco);
+      estado = structuredClone(e); problema = null; vitima = null;
       desenhar();
       mover(cena, "[data-peca]", antes, { duracao: 700 });
       $("#rp-contagem").textContent = i === 0 ? "Começo" : `Viagem ${i} de ${passos.length - 1}`;
@@ -285,7 +334,7 @@ export function montar(palco, ctx) {
     desenhar();
   }
 
-  function limpar() { problema = null; aviso.textContent = ""; aviso.className = "aviso"; desenhar(); dicas.zerar(); }
+  function limpar() { problema = null; vitima = null; aviso.textContent = ""; aviso.className = "aviso"; desenhar(); dicas.zerar(); }
   $("#rp-atravessar").addEventListener("click", atravessar);
   $("#rp-desfazer").addEventListener("click", () => {
     if (!historico.length) return;
