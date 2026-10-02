@@ -54,7 +54,8 @@ const DESENHOS = {
     <ellipse cx="50" cy="56" rx="19" ry="22" fill="#5b4a44"/>${olhos(52, 8, 5.5)}<ellipse cx="50" cy="68" rx="4" ry="2.5" fill="#2a1f1c"/>`,
   couve: `${sombra}
     <circle cx="50" cy="56" r="34" fill="#3aa856"/><circle cx="32" cy="44" r="18" fill="#56c46c"/><circle cx="68" cy="44" r="18" fill="#56c46c"/><circle cx="50" cy="34" r="18" fill="#6fd67f"/>
-    <path d="M50 88 L50 40 M50 60 L32 46 M50 60 L68 46 M50 74 L34 64 M50 74 L66 64" stroke="#d8f5c8" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+    <path d="M50 88 L50 40 M50 60 L32 46 M50 60 L68 46 M50 74 L34 64 M50 74 L66 64" stroke="#d8f5c8" stroke-width="3" fill="none" stroke-linecap="round"/>
+    ${olhos(60, 11, 5.5)}<path d="M46 72 h8" stroke="#1b1f3a" stroke-width="3" stroke-linecap="round"/>`,
   barqueiro: `${sombra}
     <path d="M20 90 Q22 66 50 64 Q78 66 80 90 Z" fill="#3a6fd1"/>
     <circle cx="50" cy="48" r="22" fill="#f2c29a"/>${olhos(48, 8, 4.5)}${sorriso(57, 6)}
@@ -150,6 +151,28 @@ const DESENHOS = {
   mao: `<path d="M38 50 V16 a7 7 0 0 1 14 0 V44 V36 a7 7 0 0 1 14 0 V48 V42 a7 7 0 0 1 14 0 V70 Q80 94 56 94 Q40 94 30 80 L16 60 a7 7 0 0 1 11 -9 L38 62 Z" fill="#fff" stroke="#1b1f3a" stroke-width="4" stroke-linejoin="round"/>`,
 };
 
+// ---------- Humores dos personagens da Raposa (01/10/2026) ----------
+// Mesmo desenho, com rosto diferente: feliz (chegou) e preocupado (ficou em apuros). Nunca medo
+// nem choro: a preocupação é gentil, e some quando a criança toca em Desfazer.
+const sobrancelhas = (y, dx, cor = "#1b1f3a") => `<path d="M${50 - dx - 6} ${y + 3} L${50 - dx + 5} ${y - 2} M${50 + dx + 6} ${y + 3} L${50 + dx - 5} ${y - 2}" stroke="${cor}" stroke-width="3" stroke-linecap="round"/>`;
+const bocaO = (x, y, cor) => `<ellipse cx="${x}" cy="${y}" rx="3" ry="3.6" fill="${cor}"/>`;
+DESENHOS["raposa-feliz"] = DESENHOS.raposa + sorriso(75, 6) + bochechas(62);
+DESENHOS["cordeiro-feliz"] = DESENHOS.cordeiro + sorriso(72, 5, "#f6e7dd");
+DESENHOS["cordeiro-preocupado"] = DESENHOS.cordeiro + sobrancelhas(43, 8, "#f6e7dd") + bocaO(50, 75, "#f6e7dd");
+DESENHOS["couve-feliz"] = DESENHOS.couve.replace(/<path d="M46 72 h8"[^>]*\/>/, "") + sorriso(70, 6) + bochechas(68);
+DESENHOS["couve-preocupada"] = DESENHOS.couve.replace(/<path d="M46 72 h8"[^>]*\/>/, "") + sobrancelhas(51, 11) + bocaO(50, 74, "#1b1f3a");
+DESENHOS["barqueiro-feliz"] = DESENHOS.barqueiro + `<path d="M74 74 Q84 64 88 50" stroke="#3a6fd1" stroke-width="9" fill="none" stroke-linecap="round"/><circle cx="88" cy="46" r="6.5" fill="#f2c29a"/>`;
+// Bento, o texugo: anfitrião do Reino Unido (Alcuíno era de York). Calmo e curioso, gosta de
+// mapas antigos. Sem chapéu-coco, chá ou outro estereótipo de país.
+DESENHOS.bento = `${sombra}
+    <ellipse cx="50" cy="76" rx="30" ry="18" fill="#8a8f99"/>
+    <circle cx="25" cy="30" r="9" fill="#2b2b33"/><circle cx="75" cy="30" r="9" fill="#2b2b33"/><circle cx="25" cy="30" r="4.5" fill="#f4f1ea"/><circle cx="75" cy="30" r="4.5" fill="#f4f1ea"/>
+    <ellipse cx="50" cy="46" rx="29" ry="25" fill="#f4f1ea"/>
+    <path d="M36 22 Q30 40 33 62 Q38 66 42 60 Q40 42 44 23 Z M64 22 Q70 40 67 62 Q62 66 58 60 Q60 42 56 23 Z" fill="#2b2b33"/>
+    <circle cx="38" cy="47" r="5" fill="#fff"/><circle cx="62" cy="47" r="5" fill="#fff"/><circle cx="38.6" cy="47.6" r="2.8" fill="#1b1f3a"/><circle cx="62.6" cy="47.6" r="2.8" fill="#1b1f3a"/>
+    <ellipse cx="50" cy="60" rx="6" ry="4" fill="#2b2b33"/>${sorriso(66, 5)}
+    <rect x="34" y="78" width="32" height="12" rx="6" fill="#f0dcae" stroke="#a9682f" stroke-width="2"/><path d="M40 84 h8 M52 82 l4 4 l4 -4" stroke="#a9682f" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+
 export const arte = (nome, tam = 48, classe = "") =>
   `<svg class="arte ${classe}" width="${tam}" height="${tam}" viewBox="0 0 100 100" aria-hidden="true">${DESENHOS[nome] || DESENHOS.estrela}</svg>`;
 
@@ -167,7 +190,7 @@ export const NOME_DESENHO = {
   leao: "Leão", tigre: "Tigre", panda: "Panda", sapo: "Sapo", polvo: "Polvo", unicornio: "Unicórnio", dragao: "Dragão", dino: "Dinossauro",
   golfinho: "Golfinho", tubarao: "Tubarão", abelha: "Abelha", borboleta: "Borboleta", foguete: "Foguete", bola: "Bola", violao: "Violão", cacto: "Cacto",
   cachorro: "Cachorro", gato: "Gato", maca: "Maçã", banana: "Banana", estrela: "Estrela", lua: "Lua", carro: "Carro", balao: "Balão",
-  flor: "Flor", gota: "Gota", bandeira: "Bandeira", trofeu: "Troféu", samuca: "Samuca", lupa: "Lupa", chave: "Chave", cofre: "Cofre", uva: "Uva", laranja: "Laranja", morango: "Morango", pera: "Pera",
+  bento: "Bento, o texugo", flor: "Flor", gota: "Gota", bandeira: "Bandeira", trofeu: "Troféu", samuca: "Samuca", lupa: "Lupa", chave: "Chave", cofre: "Cofre", uva: "Uva", laranja: "Laranja", morango: "Morango", pera: "Pera",
 };
 export const nomeDoAvatar = (valor) => NOME_DESENHO[AVATAR_DE[valor]] || "Personagem";
 // Valor desconhecido (por exemplo, de uma cópia de segurança editada) entra escapado.

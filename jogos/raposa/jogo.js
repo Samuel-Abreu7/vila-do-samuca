@@ -4,11 +4,15 @@
 import { carregarEstilo, faixa, som, festa, prepararJogo, posicoes, mover, dicasEmDegraus, repetir, semMovimento, fatorLento } from "../../util.js";
 import { arte, icone } from "../../arte.js";
 
+// nota: grau da escala da música (cada bicho tem a sua nota de piano ao ser tocado).
 const TODOS = [
-  { id: "raposa", nome: "Raposa" },
-  { id: "cordeiro", nome: "Cordeiro" },
-  { id: "couve", nome: "Couve" },
+  { id: "raposa", nome: "Raposa", nota: 0 },
+  { id: "cordeiro", nome: "Cordeiro", nota: 2 },
+  { id: "couve", nome: "Couve", nota: 4 },
 ];
+// Rosto de cada um: feliz quando chegou, preocupado quando ficou em apuros.
+const HUMOR = { feliz: { raposa: "raposa-feliz", cordeiro: "cordeiro-feliz", couve: "couve-feliz" },
+  preocupado: { cordeiro: "cordeiro-preocupado", couve: "couve-preocupada" } };
 const PERIGOS = [
   { a: "raposa", b: "cordeiro", vitima: "cordeiro", texto: "A raposa ficou sozinha com o cordeiro, e o cordeiro levou um baita susto!" },
   { a: "cordeiro", b: "couve", vitima: "couve", texto: "O cordeiro ficou sozinho com a couve e comeu tudinho!" },
@@ -56,7 +60,9 @@ const ARBUSTO = `<svg class="rp-arbusto" viewBox="0 0 60 34" aria-hidden="true">
   <circle cx="28" cy="12" r="2.4" fill="#ff7ac8"/><circle cx="40" cy="18" r="2.2" fill="#ffc83d"/></svg>`;
 const CAIS = `<svg class="rp-cais" viewBox="0 0 120 30" aria-hidden="true"><rect x="8" y="22" width="8" height="8" fill="#6b3f1c"/><rect x="104" y="22" width="8" height="8" fill="#6b3f1c"/>
   <rect x="0" y="6" width="120" height="18" rx="3" fill="#c98b4f"/><path d="M24 6v18M48 6v18M72 6v18M96 6v18" stroke="#8a5424" stroke-width="2"/></svg>`;
-const CENARIO_CIMA = `${ARVORE}${ARBUSTO.replace('class="rp-arbusto"', 'class="rp-arbusto direita"')}<span class="rp-areia"></span>${CAIS}`;
+const MORROS = `<svg class="rp-morros" viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M0 40 Q40 6 90 24 Q130 4 180 22 Q230 2 300 26 V40 Z" fill="#8fdc8a" opacity=".6"/></svg>`;
+const CENARIO_CIMA = `${MORROS}${ARVORE}<span class="rp-areia"></span>${CAIS}`;
 const CENARIO_BAIXO = `<span class="rp-areia"></span>${CAIS}${ARBUSTO}`;
 const RIO = `<svg class="rp-ondas" viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true">
   <path d="M20 40 q12 -6 24 0 M120 64 q12 -6 24 0 M230 30 q12 -6 24 0 M60 120 q12 -6 24 0 M190 140 q12 -6 24 0 M250 96 q12 -6 24 0 M30 170 q12 -6 24 0"
@@ -85,15 +91,21 @@ export function montar(palco, ctx) {
   const estadoInicial = () => ({ lado: Object.fromEntries(ids.map((id) => [id, "cima"])), barco: "cima", carga: null, travessias: 0 });
   let estado = estadoInicial();
   let historico = [];
-  let problema = null, vitima = null;
+  let problema = null, vitima = null, erros = 0;
   let vivo = true, repetindo = false;
 
   palco.innerHTML = `
     <section class="jg rp">
       ${faixa(arte("raposa", 54), "Raposa, cordeiro e couve")}
+      <div class="rp-combinados" role="note" aria-label="Sem o barqueiro, não podem ficar sozinhos: ${PERIGOS.filter((x) => ids.includes(x.a) && ids.includes(x.b)).map((x) => `${artigo[x.a]} com ${artigo[x.b]}`).join("; ")}.">
+        <span aria-hidden="true">Sozinhos, não:</span>
+        ${PERIGOS.filter((x) => ids.includes(x.a) && ids.includes(x.b)).map((x) =>
+          `<span class="rp-par" aria-hidden="true">${arte(x.a, 30)}<b>✕</b>${arte(x.b, 30)}</span>`).join("")}
+      </div>
       <div class="rp-cena" data-teclado=".rp-peca">
         <div class="rp-margem" data-lado="cima" role="group" aria-label="Margem de partida">
           <span class="rp-placa">Partida</span>${CENARIO_CIMA}
+          <button type="button" class="rp-bento" aria-label="Bento, o texugo. Toque para ouvir a história do jogo.">${arte("bento", 46)}</button>
           <span class="rp-aqui" aria-hidden="true">O barco está aqui</span>
           <div class="rp-gente"></div>
         </div>
@@ -193,7 +205,8 @@ export function montar(palco, ctx) {
     const b = document.createElement("button");
     b.type = "button";
     b.dataset.peca = p.id;
-    b.innerHTML = `<span class="rp-figura">${arte(p.id, ondeEsta === "barco" ? 52 : 62)}${vitima === p.id ? '<span class="rp-susto" aria-hidden="true">!</span>' : ""}</span><span class="rp-nome">${p.nome}</span>`;
+    const humor = vitima === p.id ? HUMOR.preocupado[p.id] : ondeEsta === "baixo" ? HUMOR.feliz[p.id] : null;
+    b.innerHTML = `<span class="rp-figura">${arte(humor || p.id, ondeEsta === "barco" ? 52 : 62)}${vitima === p.id ? '<span class="rp-susto" aria-hidden="true">!</span>' : ""}</span><span class="rp-nome">${p.nome}</span>`;
     b.disabled = repetindo || !(!problema && !venceu() && (ondeEsta === "barco" || estado.lado[p.id] === estado.barco));
     b.className = `rp-peca ${ondeEsta === "barco" ? "no-barco" : b.disabled ? "longe" : "pode"}`;
     b.setAttribute("aria-label", ondeEsta === "barco" ? `${p.nome}, no barco. Toque para descer.`
@@ -201,7 +214,7 @@ export function montar(palco, ctx) {
     b.addEventListener("click", () => {
       const antes = posicoes(cena, "[data-peca]");
       estado.carga = estado.carga === p.id ? null : p.id;
-      som(estado.carga ? "toque" : "solta");
+      som(estado.carga ? "nota" : "solta", p.nota);
       aviso.textContent = ""; aviso.className = "aviso";
       desenhar();
       mover(cena, "[data-peca]", antes, { arco: 40 });
@@ -222,7 +235,9 @@ export function montar(palco, ctx) {
       }
       m.classList.toggle("com-barco", estado.barco === lado);
     }
-    barco.innerHTML = `${CASCO}${REMOS}<span class="rp-barqueiro" role="img" aria-label="Barqueiro">${arte("barqueiro", 56)}</span>`;
+    barco.innerHTML = `${CASCO}${REMOS}<span class="rp-barqueiro" role="img" aria-label="Barqueiro">${arte(venceu() ? "barqueiro-feliz" : "barqueiro", 56)}</span>`;
+    // Lugar vago desenhado: "cabe mais um" sem precisar ler a regra.
+    if (!estado.carga && !venceu()) barco.insertAdjacentHTML("beforeend", `<span class="rp-vago" aria-hidden="true">+1</span>`);
     // Placa da chegada: quantos já chegaram, com as figurinhas (✓ em quem chegou, não só a cor).
     const chegaram = PERSONAGENS.filter((p) => estado.lado[p.id] === "baixo" && estado.carga !== p.id);
     $("#rp-chegada").innerHTML = `Chegada <span class="rp-chegaram">${PERSONAGENS.map((p) =>
@@ -237,13 +252,15 @@ export function montar(palco, ctx) {
     $("#rp-atravessar").innerHTML = `${icone("play")} ${estado.carga ? `Atravessar com ${artigo[estado.carga]}` : "Atravessar sozinho"}`;
     // Depois de vencer, Desfazer fica desligado: senão a mesma vitória contaria de novo no nível e no diário.
     $("#rp-desfazer").disabled = historico.length === 0 || repetindo || fim;
+    // Errou: o Desfazer ganha destaque (é o caminho de volta, sem bronca).
+    $("#rp-desfazer").classList.toggle("dourado", !!problema);
     $("#rp-recomecar").disabled = repetindo;
     $("#rp-dica").hidden = fim || repetindo;
     $("#rp-contagem").textContent = `Travessias: ${estado.travessias}`;
 
     if (problema) {
       aviso.className = "aviso erro";
-      aviso.textContent = `Opa! ${problema} Toque em Desfazer e tente outro caminho.`;
+      aviso.textContent = `Opa! ${problema} Tudo bem: errar faz parte de pensar. Toque em Desfazer e o barco volta.`;
     } else if (fim && !repetindo) {
       aviso.className = "aviso certo";
       aviso.textContent = estado.travessias === MINIMO
@@ -271,11 +288,12 @@ export function montar(palco, ctx) {
     desenhar();
     mover(cena, "[data-peca]", antes, { duracao: 700 });
     if (levou && estado.barco === "baixo" && !problema) pular([levou], 700);
-    if (problema) som("erro");
+    if (problema) { som("erro"); erros += 1; }
     else if (venceu()) {
       som("vitoria");
       const perfeito = estado.travessias === MINIMO;
       if (perfeito) { festa(); if (!fase) ctx?.conquistar?.("raposa-perfeita"); }
+      if (!erros && !fase) ctx?.conquistar?.("raposa-pensou");
       pular(ids, 1000);
       // Guarda a solução para "Mostrar como eu fiz".
       const passos = [...historico.map((e) => structuredClone(e)), structuredClone(estado)];
@@ -338,12 +356,18 @@ export function montar(palco, ctx) {
   $("#rp-atravessar").addEventListener("click", atravessar);
   $("#rp-desfazer").addEventListener("click", () => {
     if (!historico.length) return;
-    estado = historico.pop(); som("solta"); limpar();
+    const antes = posicoes(cena, "[data-peca]");
+    const anterior = historico.pop();
+    if (anterior.barco !== estado.barco) remar(estado.barco);
+    estado = anterior; som("solta"); limpar();
+    mover(cena, "[data-peca]", antes, { duracao: 700 });
   });
   $("#rp-recomecar").addEventListener("click", () => {
-    estado = estadoInicial(); historico = []; som("solta"); limpar();
+    estado = estadoInicial(); historico = []; erros = 0; som("solta"); limpar();
   });
 
+  $(".rp-bento").hidden = !ctx?.historia;
+  $(".rp-bento").addEventListener("click", () => { som("nota", 1); jogo.abrirHistoria(); });
   desenhar();
   // O balão do Samuca entra logo depois de montar; por isso a primeira fala espera um instante.
   setTimeout(() => {

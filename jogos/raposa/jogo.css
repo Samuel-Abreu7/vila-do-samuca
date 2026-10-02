@@ -122,3 +122,28 @@
 .rp-margem[data-lado="baixo"] { padding-bottom: 56px; }
 #rp-chegada { white-space: nowrap; bottom: 8px; }
 #rp-chegada b { font-weight: 400; }
+
+/* ---------- Nível 2 (02/10/2026): combinados desenhados, lugar vago, Bento, profundidade ---------- */
+.rp-combinados {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 12px;
+  margin: 0 0 8px; padding: 6px 10px; border-radius: 14px; background: rgba(255,255,255,.08);
+  font: 800 .85rem var(--fonte); color: var(--apagado);
+}
+.rp-par { display: inline-flex; align-items: center; gap: 2px; padding: 2px 8px; border-radius: 99px; background: #fff4d6; }
+.rp-par b { color: #9a3b1e; font-size: 1rem; }
+/* Lugar livre no barco */
+.rp-vago {
+  display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: 6px; border-radius: 50%;
+  border: 3px dashed rgba(255,255,255,.85); color: #fff; font: 900 .95rem var(--titulo); background: rgba(0,0,0,.12);
+}
+/* Bento, o anfitrião: parado na margem; só fala quando a criança toca */
+.rp-bento {
+  position: absolute; right: 6px; top: 6px; z-index: 2; width: 54px; height: 54px; padding: 2px;
+  border: 0; border-radius: 16px; background: rgba(255,255,255,.25); cursor: pointer;
+}
+.rp-bento:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+.rp-bento:active { translate: 0 2px; }
+/* Profundidade parada: a margem de partida fica mais longe (morros, cor mais clara, figuras um pouco menores) */
+.rp-morros { position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 40px; }
+.rp-margem[data-lado="cima"] { background: linear-gradient(180deg, #9fe39a, #5cc463 70%, #46b04e); }
+.rp-margem[data-lado="cima"] .rp-peca:not(.no-barco) .rp-figura svg { scale: .9; }

@@ -1,13 +1,18 @@
 // Ajudantes compartilhados pelos jogos.
 import { arte, icone } from "./arte.js";
 
+// Devolve uma promessa que resolve quando o estilo carregou (ou falhou), para o app esperar antes
+// de mostrar o jogo: em celular simples, sem isso o jogo aparece um instante sem forma.
 export function carregarEstilo(url) {
   const href = new URL(url).href;
-  if ([...document.querySelectorAll("link[rel=stylesheet]")].some((l) => l.href === href)) return;
+  const existente = [...document.querySelectorAll("link[rel=stylesheet]")].find((l) => l.href === href);
+  if (existente) return existente.sheet ? Promise.resolve() : new Promise((r) => { existente.addEventListener("load", r, { once: true }); existente.addEventListener("error", r, { once: true }); });
   const link = document.createElement("link");
   link.rel = "stylesheet";
   link.href = href;
+  const pronto = new Promise((r) => { link.onload = r; link.onerror = r; });
   document.head.appendChild(link);
+  return pronto;
 }
 
 // Botões de escolha única (tipo "pílula"). opcoes: [[valor, rótulo], ...]
@@ -78,12 +83,14 @@ function piano(freq, inicio, dur = 1.2, vol = 0.14) {
 const PENTA = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
 let passoMelodia = 0;
 
-export function som(tipo) {
+// tipo "nota": a nota própria de um personagem (grau da escala pentatônica da música).
+export function som(tipo, grau = 0) {
   if (!somLigado()) return;
   try {
     contextoAudio();
     vibrar(tipo);
     if (tipo === "toque") { piano(PENTA[passoMelodia % 5], 0, 0.6, 0.1); passoMelodia++; }
+    else if (tipo === "nota") piano(PENTA[grau % 5], 0, 0.7, 0.1);
     else if (tipo === "solta") piano(PENTA[0] / 2 * 1.5, 0, 0.5, 0.08);
     else if (tipo === "ponto") { piano(PENTA[2], 0, 0.6); piano(PENTA[4], 0.1, 0.8); }
     else if (tipo === "erro") { piano(329.63, 0, 0.7, 0.08); piano(261.63, 0.18, 0.9, 0.08); }
@@ -418,7 +425,9 @@ export function prepararJogo(palco, { regras, ajustes = null, passos = () => [],
 
   const corpoAjuda = document.createElement("div");
   corpoAjuda.className = "folha-corpo";
+  const historia = ctx?.historia;
   corpoAjuda.innerHTML = `${ctx?.treina ? `<p class="treina"><b>O que você treina:</b> ${ctx.treina}</p>` : ""}
+    ${historia ? `<button type="button" class="botao" data-historia>${arte(historia.anfitriao, 30)} ${historia.convite}</button>` : ""}
     ${podeGuiar ? `<div class="aprender">
       <p>${guiadasFeitas ? "Você já fez as fases guiadas. Quer repetir?" : "Aprenda jogando: 3 fases curtas, com o Samuca mostrando cada passo."}</p>
       <button type="button" class="botao ${guiadasFeitas ? "" : "dourado"}" data-guiadas>${guiadasFeitas ? "✓ Refazer as 3 fases guiadas" : "Aprender em 3 fases"}</button></div>` : ""}
@@ -477,6 +486,34 @@ export function prepararJogo(palco, { regras, ajustes = null, passos = () => [],
     dSegredo.addEventListener("close", pararFala);
     corpoAjuda.querySelector("[data-segredo]").addEventListener("click", () => { dAjuda.close(); dSegredo.showModal(); });
   }
+  // História narrada pelo anfitrião do jogo: oferecida na primeira vez e sempre no "?", nunca
+  // toca sozinha, e tem "Pular". Usa o áudio gravado (voz de IA, origem registrada) quando existe;
+  // sem ele, ou sem internet, a voz do próprio Android lê o mesmo texto.
+  let dHistoria = null, audio = null;
+  const pararHistoria = () => { try { audio?.pause(); } catch {} audio = null; pararFala(); };
+  if (historia) {
+    const corpo = document.createElement("div");
+    corpo.className = "folha-corpo historia";
+    corpo.innerHTML = `<div class="historia-quem">${arte(historia.anfitriao, 88)}<p>${historia.quem}</p></div>
+      <div class="acoes"><button type="button" class="botao dourado" data-tocar>${icone("som")} Ouvir a história</button>
+      <button type="button" class="botao" data-pular>Pular</button></div>
+      <div class="historia-texto">${historia.paginas.map((t) => `<p>${t}</p>`).join("")}</div>`;
+    dHistoria = folha(historia.titulo, corpo);
+    const tocar = corpo.querySelector("[data-tocar]");
+    tocar.hidden = !historia.audio && !podeFalar();
+    tocar.addEventListener("click", () => {
+      pararHistoria();
+      const texto = corpo.querySelector(".historia-texto").innerText;
+      if (!historia.audio) return falar(texto);
+      audio = new Audio(new URL(historia.audio, location.href).href);
+      audio.play().catch(() => falar(texto));
+    });
+    corpo.querySelector("[data-pular]").addEventListener("click", () => dHistoria.close());
+    dHistoria.addEventListener("close", pararHistoria);
+    corpoAjuda.querySelector("[data-historia]").addEventListener("click", () => { dAjuda.close(); dHistoria.showModal(); });
+  }
+  const abrirHistoria = () => dHistoria?.showModal();
+
   corpoAjuda.querySelector("[data-guiadas]")?.addEventListener("click", () => { dAjuda.close(); ctx.iniciarTutorial(); });
   corpoAjuda.querySelector("[data-imprimir]")?.addEventListener("click", () => {
     const { titulo, html } = paraImprimir();
@@ -515,9 +552,11 @@ export function prepararJogo(palco, { regras, ajustes = null, passos = () => [],
     convite.innerHTML = `<p>Primeira vez aqui?</p>
       ${podeGuiar ? `<button type="button" class="botao dourado" data-c="guiar">Aprender em 3 fases</button>` : ""}
       <button type="button" class="botao ${podeGuiar ? "" : "dourado"}" data-c="ver">Ver como joga</button>
+      ${historia ? `<button type="button" class="botao" data-c="historia">${arte(historia.anfitriao, 26)} Ouvir a história</button>` : ""}
       <button type="button" class="botao" data-c="fechar" aria-label="Fechar">✕</button>`;
     convite.querySelector('[data-c="guiar"]')?.addEventListener("click", () => { convite.remove(); ctx.iniciarTutorial(); });
     convite.querySelector('[data-c="ver"]').addEventListener("click", () => { convite.remove(); verComoJoga(); });
+    convite.querySelector('[data-c="historia"]')?.addEventListener("click", () => { convite.remove(); abrirHistoria(); });
     convite.querySelector('[data-c="fechar"]').addEventListener("click", () => convite.remove());
     palco.querySelector(".faixa")?.after(convite);
     // Começou a jogar: o convite sai de cena (tela limpa).
@@ -527,9 +566,10 @@ export function prepararJogo(palco, { regras, ajustes = null, passos = () => [],
   }
   return {
     fecharAjustes: () => dAjustes?.close(),
+    abrirHistoria,
     limpar() {
       soltarTeclado.forEach((f) => f()); document.removeEventListener("click", guardaDoLimite, true);
-      pararFala(); pararDemonstracao(); dAjuda.remove(); dAjustes?.remove(); dSegredo?.remove();
+      pararHistoria(); pararDemonstracao(); dAjuda.remove(); dAjustes?.remove(); dSegredo?.remove(); dHistoria?.remove();
     },
   };
 }

@@ -1,5 +1,5 @@
 import { FAMILIAS, JOGOS, CONQUISTAS, INTERESSES, ICONE_INTERESSE, CURTO_INTERESSE, CARIMBOS } from "./catalogo.js";
-import { somLigado, alternarSom, som, escolhas, botaoOuvir, pararFala, ler, guardar, esc } from "./util.js";
+import { somLigado, alternarSom, som, escolhas, botaoOuvir, pararFala, ler, guardar, esc, carregarEstilo } from "./util.js";
 import * as P from "./perfis.js";
 import * as N from "./nivel.js";
 import * as S from "./samuca.js";
@@ -685,11 +685,15 @@ function mostrarFim(ctx) {
   setTimeout(() => {
     if (!ctx.samuca?.isConnected || palco.querySelector(".pausa-card, .fim-card")) return;
     const jogo = JOGOS.find((g) => g.id === ctx.jogo);
+    // Convite para um jogo parecido (só um convite: o outro jogo já está aberto no mapa, nada é liberado).
+    const proximo = jogo?.proximo && JOGOS.find((g) => g.id === jogo.proximo && g.pronto);
     const cartao = document.createElement("div");
     cartao.className = "fim-card";
     cartao.innerHTML = `
       <p class="fim-titulo">Fim de partida</p>
+      ${jogo?.curiosidade ? `<p class="fim-sabia"><b>Você sabia?</b> <span>${jogo.curiosidade}</span></p>` : ""}
       ${jogo?.foraDaTela ? `<p class="fim-fora"><b>Brinque fora da tela:</b> <span>${jogo.foraDaTela}</span></p>` : ""}
+      ${proximo ? `<a class="botao" href="#/jogo/${proximo.id}">${arte(proximo.arte, 28)} ${jogo.proximoConvite}</a>` : ""}
       ${ctx.replay ? `<button type="button" class="botao dourado" data-mostrar>Mostrar como eu fiz</button>` : ""}
       <div class="acoes"><button type="button" class="botao principal" data-denovo>Jogar de novo</button>
       <a class="botao" href="#/">Voltar para a vila</a></div>`;
@@ -701,6 +705,8 @@ function mostrarFim(ctx) {
       await ctx.replay();
       botao.disabled = false;
     });
+    const sabia = cartao.querySelector(".fim-sabia");
+    sabia?.append(botaoOuvir(() => "Você sabia? " + sabia.querySelector("span").textContent, "Ouvir"));
     const fora = cartao.querySelector(".fim-fora");
     fora?.append(botaoOuvir(() => "Brinque fora da tela. " + fora.querySelector("span").textContent, "Ouvir"));
     ctx.samuca.after(cartao);
@@ -827,6 +833,7 @@ function contexto(jogo, jogadores, extra = {}) {
     guiadasFeitas: () => ler(`guiadas:${a.id}:${jogo.id}`, false),
     treina: jogo.treina,
     segredo: jogo.segredo,
+    historia: jogo.historia,
     tutorial: extra.tutorial || 0,
     dizer(texto, humor) { if (ctx.samuca) S.dizerTexto(ctx.samuca, texto, humor); },
     reiniciar: () => iniciarJogo(jogo, contexto(jogo, jogadores, { ...extra, tutorial: 0 })),
@@ -843,7 +850,11 @@ async function iniciarJogo(jogo, ctx) {
   if (esgotado(P.ativaId())) { location.hash = "#/dormindo"; return; }
   const endereco = location.hash;
   let modulo;
-  try { modulo = await import(`./jogos/${jogo.id}/jogo.js`); }
+  try {
+    modulo = await import(`./jogos/${jogo.id}/jogo.js`);
+    // Espera o estilo do jogo (no máximo 3 s), para não mostrar o tabuleiro sem forma.
+    await Promise.race([carregarEstilo(new URL(`./jogos/${jogo.id}/jogo.css`, location.href)), new Promise((r) => setTimeout(r, 3000))]);
+  }
   catch {
     if (location.hash !== endereco) return;
     palco.innerHTML = `<section class="descanso">${S.retrato(120, "pensando")}

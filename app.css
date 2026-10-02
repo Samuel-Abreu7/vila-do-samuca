@@ -326,11 +326,13 @@ textarea.campo { font: 600 .8rem/1.4 ui-monospace, Consolas, monospace; resize: 
 
 /* Primeira vez: convite para ver como joga (não dispara sozinho) */
 .convite-demo {
-  display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 16px;
+  position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
+  padding: 10px 62px 10px 14px; border-radius: 16px;
   background: var(--cartao); box-shadow: 0 4px 0 var(--sombra);
 }
-.convite-demo p { flex: 1; font-weight: 800; }
-.convite-demo .botao { flex: none; min-height: 44px; font-size: 1rem; }
+.convite-demo p { flex: 1 1 100%; margin: 0; font-weight: 800; }
+.convite-demo .botao { flex: 1 1 auto; min-height: 44px; font-size: 1rem; }
+.convite-demo [data-c="fechar"] { position: absolute; top: 8px; right: 8px; flex: none; }
 
 /* ---------- Regras aos poucos e fases guiadas à vista ---------- */
 .aprender { display: grid; gap: 8px; padding: 12px 14px; border-radius: 16px; background: var(--cartao-2); box-shadow: 0 4px 0 var(--sombra); }
@@ -707,7 +709,7 @@ svg .pc-alvo.dica-jogada { fill: rgba(255,200,61,.22) !important; }
    Mais espaço entre letras, palavras e linhas no texto corrido, que é o que as pesquisas com
    crianças disléxicas mostraram ajudar. Títulos e números dos tabuleiros ficam como estão. */
 body.letra-facil { --fonte: "Atkinson Hyperlegible", Verdana, Tahoma, system-ui, sans-serif; font-weight: 400; }
-body.letra-facil :is(p, li, .aviso, .regras-texto, .cartao-jogo-texto small, .fim-fora, .treina, .el-rota, .th-estado, .nim-previa, .nim-regra) {
+body.letra-facil :is(p, li, .aviso, .regras-texto, .cartao-jogo-texto small, .fim-fora, .fim-sabia, .treina, .el-rota, .th-estado, .nim-previa, .nim-regra) {
   letter-spacing: .05em; word-spacing: .14em; line-height: 1.6;
 }
 
@@ -730,3 +732,13 @@ body.vila-calma .botao.dourado { background: linear-gradient(180deg, #fbe7a6, #f
 body.vila-calma .mapa-lugar.sugerido .mapa-base { box-shadow: 0 5px 0 rgba(0,0,0,.35), 0 0 0 3px #f3dfa2; }
 body.vila-calma .cartao-jogo.sugerido { box-shadow: 0 5px 0 var(--sombra), inset 0 3px 0 var(--cor-jogo), 0 0 0 3px #f3dfa2; }
 body.vila-calma .mapa-selo { background: #f3dfa2; }
+
+/* ---------- Fim de partida: "Você sabia?" (01/10/2026) ---------- */
+.fim-sabia { color: var(--apagado); display: flex; gap: 8px; align-items: flex-start; }
+.fim-sabia b { color: #fff; }
+
+/* ---------- História narrada pelo anfitrião ---------- */
+.historia-quem { display: flex; align-items: center; gap: 12px; }
+.historia-quem p { font-family: var(--titulo); font-size: 1.1rem; margin: 0; }
+.historia-texto p { margin: .5em 0; line-height: 1.5; }
+[data-historia] .arte, [data-c="historia"] .arte { vertical-align: middle; }

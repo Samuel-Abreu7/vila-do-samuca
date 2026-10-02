@@ -26,6 +26,7 @@ export const FAMILIAS = {
 // Conquistas da estante: poucas, sempre as mesmas, nunca sorteadas nem comparadas entre primos.
 export const CONQUISTAS = [
   { id: "raposa-perfeita", jogo: "raposa", nome: "Travessia perfeita", como: "Levar todos em só 7 travessias." },
+  { id: "raposa-pensou", jogo: "raposa", nome: "Pensou antes de remar", como: "Levar todos sem deixar ninguém em apuros nenhuma vez." },
   { id: "elevador-impossivel", jogo: "elevador", nome: "Detetive do impossível", como: "Descobrir uma fase sem solução." },
   { id: "elevador-topo", jogo: "elevador", nome: "Até o último andar", como: "Resolver a fase 12 do elevador." },
   { id: "hanoi-5", jogo: "hanoi", nome: "Torre de cinco", como: "Montar a torre com 5 discos." },
@@ -46,7 +47,22 @@ export const JOGOS = [
     objetivo: "Leve todos para a outra margem. Quem vai primeiro?",
     direito: "dp", // domínio público: Alcuíno de York, séc. VIII
     interesses: ["planejar"],
-    curiosidade: "Este enigma tem mais de 1.200 anos. Ele aparece num livro de desafios que o monge Alcuíno de York escreveu, por volta do ano 800, para os alunos do imperador Carlos Magno.",
+    curiosidade: "Este enigma tem mais de 1.200 anos. Ele está num livro de desafios atribuído a Alcuíno de York, professor na corte de Carlos Magno, por volta do ano 800. No original, o barqueiro levava um lobo, uma cabra e um maço de couves.",
+    // História narrada pelo anfitrião (texto conferido em fonte em 02/10/2026: Wikipédia "Alcuin",
+    // "Propositiones ad Acuendos Juvenes" e "Wolf, goat and cabbage problem"; MacTutor, St Andrews).
+    // audio: arquivo de voz de IA, quando existir (origem e licença registradas em DECISOES.md).
+    historia: {
+      anfitriao: "bento", quem: "Bento, o texugo", titulo: "O rio de Alcuíno", convite: "A história do Bento", audio: null,
+      paginas: [
+        "Olá! Eu sou o Bento, um texugo da Inglaterra. Venho de uma cidade antiga chamada York.",
+        "Há mais de mil e duzentos anos, em York, vivia um professor chamado Alcuíno. Ele adorava ensinar.",
+        "Um dia, o rei Carlos Magno o convidou para ensinar na escola do seu palácio, do outro lado do mar.",
+        "Conta-se que Alcuíno juntou desafios num livro de nome comprido: Problemas para Aguçar os Jovens. Ele sabia que pensar também é brincar.",
+        "Num desses desafios, um barqueiro precisa atravessar um rio com um lobo, uma cabra e um maço de couves. Aqui na vila, eles viraram uma raposa, um cordeiro e uma couve.",
+        "O barco é pequeno, e ninguém pode ficar em apuros. Você ajuda o barqueiro? Pense com calma: o rio espera por você.",
+      ],
+    },
+    proximo: "barco", proximoConvite: "Quer atravessar outro rio?",
     paises: ["Reino Unido", "França"],
     segredo: ["Descubra quem é o encrenqueiro: o cordeiro briga com a raposa E com a couve. Por isso ele é quem mais precisa de cuidado.", "O barco não serve só para ir: ele também pode trazer alguém de volta.", "Às vezes é preciso dar um passo para trás para depois avançar. Quem poderia voltar no barco?"],
     treina: "Planejar vários passos à frente e testar hipóteses sem medo de errar.",
