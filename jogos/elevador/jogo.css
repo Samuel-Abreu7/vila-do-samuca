@@ -1,0 +1,89 @@
+.el-fases button { min-width: 48px; padding: 6px 10px; font-family: var(--titulo); font-size: 1rem; }
+.el-fase-atual { font-family: var(--titulo); color: var(--apagado); text-align: center; }
+.el-cena {
+  border-radius: 22px; padding: 16px 12px 0; overflow: hidden;
+  background:
+    radial-gradient(circle at 88% 12%, #fff3b0 0 18px, rgba(255,243,176,.25) 19px 34px, transparent 35px),
+    radial-gradient(ellipse 60px 18px at 18% 14%, rgba(255,255,255,.85) 98%, transparent),
+    radial-gradient(ellipse 44px 14px at 30% 9%, rgba(255,255,255,.85) 98%, transparent),
+    linear-gradient(180deg, #7cc8ff, #bfe6ff 70%, #8fd07a 70%, #5cb85a);
+  box-shadow: 0 6px 0 var(--sombra);
+}
+.el-rota {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 14px;
+  margin: 0; font-weight: 800; color: var(--tinta);
+}
+.el-rota-alvo { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px 2px 4px; border-radius: 999px; background: #f6e3a8; color: #4a3200; }
+.el-rota > .arte { display: inline-block; vertical-align: middle; }
+.el-predio-moldura { position: relative; padding-top: 22px; }
+.el-predio-moldura::before { /* telhado */
+  content: ""; position: absolute; left: -6px; right: -6px; top: 0; height: 26px;
+  background: linear-gradient(180deg, #c0392b, #8e2a20); border-radius: 10px 10px 2px 2px;
+  box-shadow: 0 3px 0 rgba(0,0,0,.25);
+}
+.el-corpo { display: grid; grid-template-columns: minmax(0, 1fr) 112px; gap: 10px; align-items: start; }
+.el-predio {
+  list-style: none; margin: 0; padding: 6px 8px 0; display: grid;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, #e0a36a, #c47a3e);
+  box-shadow: 0 6px 0 var(--sombra), inset 0 3px 0 rgba(255,255,255,.18);
+}
+/* Cada andar: número, poço do elevador (contínuo de cima a baixo), janelas e bandeira. */
+.el-predio li {
+  position: relative; display: grid; grid-template-columns: 3.3em 46px minmax(0, 1fr) 28px; align-items: stretch;
+  min-height: 36px; font-variant-numeric: tabular-nums;
+}
+.el-predio li > .num, .el-predio li > .janelas, .el-predio li > .bandeira { border-top: 3px solid #9a5a2c; }
+.el-predio .num {
+  align-self: stretch; display: flex; align-items: center; padding-left: 4px;
+  font-family: var(--titulo); color: #3b1f08; font-size: 1rem;
+}
+.el-predio .poco {
+  position: relative; display: grid; place-items: center;
+  background: linear-gradient(90deg, #4a2c16, #6b4224 18%, #6b4224 82%, #4a2c16);
+  box-shadow: inset 2px 0 0 #2e1a0b, inset -2px 0 0 #2e1a0b;
+}
+.cabine-peca { display: block; line-height: 0; position: relative; z-index: 2; } /* passa por cima dos outros andares ao deslizar */
+.el-predio .janelas { display: flex; align-items: center; justify-content: space-evenly; gap: 3px; min-width: 0; padding: 0 3px; }
+.el-predio .janelas i { flex: 0 1 11px; height: 15px; border-radius: 3px; background: #6b4a33; box-shadow: inset 0 -3px 0 rgba(0,0,0,.2); }
+.el-predio .bandeira { display: flex; align-items: center; justify-content: center; }
+.el-predio li.terreo .janelas i:nth-child(2) { height: 26px; align-self: end; border-radius: 6px 6px 0 0; background: #7a4a24; } /* porta */
+
+/* Destino: bandeira, número em placa dourada e contorno tracejado (não só cor). */
+.el-predio li.alvo { outline: 3px dashed #ffe08a; outline-offset: -3px; border-radius: 6px; }
+.el-predio li.alvo .num { background: linear-gradient(90deg, #ffe08a, #ffe08a00); border-radius: 6px 0 0 6px; }
+/* Andar atual: janelas acesas, cabine no poço e número em placa azul. */
+.el-predio li.aqui .janelas i { background: #ffe9a3; box-shadow: 0 0 8px rgba(255,220,120,.7); }
+.el-predio li.aqui .num { color: #fff; background: linear-gradient(90deg, var(--azul-escuro), var(--azul-profundo)); border-radius: 6px 0 0 6px; }
+.el-predio li.aqui.alvo .num { background: linear-gradient(90deg, var(--verde-escuro), var(--verde-profundo)); }
+
+.el-painel {
+  display: grid; gap: 14px; justify-items: center; align-self: end; margin-bottom: 12px;
+  padding: 12px 8px; border-radius: 18px;
+  background: linear-gradient(180deg, #9aa4c7, #5d6690);
+  box-shadow: 0 6px 0 var(--sombra), inset 0 3px 0 rgba(255,255,255,.4);
+}
+.el-tecla {
+  width: 92px; height: 92px; border-radius: 50%; border: 0; cursor: pointer; color: #4a2d00;
+  display: grid; place-content: center; line-height: 1;
+  font-family: var(--titulo);
+  background: radial-gradient(circle at 35% 30%, #ffe07a, var(--ouro) 45%, var(--ouro-escuro));
+  box-shadow: 0 6px 0 #7a5000, inset 0 -4px 0 rgba(0,0,0,.2), 0 0 0 5px #3d4466;
+  text-shadow: 0 1px 0 rgba(255,255,255,.45);
+}
+#el-desce { color: #06203f; background: radial-gradient(circle at 35% 30%, #b5e0ff, #8fd0ff 45%, var(--azul)); box-shadow: 0 6px 0 #0d3a78, inset 0 -4px 0 rgba(0,0,0,.2), 0 0 0 5px #3d4466; }
+.el-tecla .seta { font-size: .9rem; }
+.el-tecla b { font-size: 2rem; font-weight: 400; }
+.el-tecla small { font-size: .75rem; }
+.el-tecla:active:not(:disabled) { translate: 0 5px; box-shadow: 0 1px 0 #7a5000, 0 0 0 5px #3d4466; }
+.el-tecla:disabled { filter: grayscale(1) brightness(.6); cursor: default; }
+.el-painel .contagem { color: #1b1f3a; }
+/* Visor do elevador: mostra o andar em que a cabine está. */
+.el-visor {
+  margin: 0; width: 100%; box-sizing: border-box; padding: 4px 6px; border-radius: 10px; text-align: center;
+  font-family: var(--titulo); font-size: 1.25rem; color: #ffd76a; background: #1d1f33;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.6), 0 0 0 3px #3d4466;
+}
+.el-tecla.sem-andar small { font-size: .68rem; }
+.el-fases button.sugerida { box-shadow: 0 3px 0 var(--sombra), 0 0 0 3px var(--ouro); }
+.el-fase-atual:empty { display: none; }

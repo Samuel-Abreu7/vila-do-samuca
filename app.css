@@ -1,0 +1,732 @@
+/* Arena: fundo índigo profundo, peças com volume (borda inferior escura = "3D"),
+   cores de jogo saturadas, título em Lilita One. Tema único, escuro, por escolha. */
+@font-face { font-family: "Lilita One"; src: url("fontes/lilita-one.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Nunito"; src: url("fontes/nunito.woff2") format("woff2"); font-weight: 200 1000; font-display: swap; }
+@font-face { font-family: "Atkinson Hyperlegible"; src: url("fontes/atkinson-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Atkinson Hyperlegible"; src: url("fontes/atkinson-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+:root {
+  color-scheme: dark;
+  --fundo: #17123f; --fundo-2: #2a1c6e; --sombra: #0b0826;
+  --cartao: #2b2475; --cartao-2: #372e92; --linha: #4a40b0;
+  --tinta: #ffffff; --apagado: #c2bcef;
+  --ouro: #ffc83d; --ouro-escuro: #c7880a;
+  --azul: #3aa6ff; --azul-escuro: #1a64c9;
+  --vermelho: #ff5b61; --vermelho-escuro: #b5263a;
+  --verde: #3bd67f; --verde-escuro: #158649;
+  --roxo: #a879ff; --roxo-escuro: #6a3fd1;
+  --laranja: #ff9a3c; --laranja-escuro: #bb5911;
+  /* Tons profundos: fundo de texto branco (todos passam de 8:1 com branco). O tom vivo fica na
+     borda de luz, no emblema e nos detalhes; o "-escuro" dá pelo menos 4,5:1 com branco. */
+  --laranja-profundo: #7d3d18; --azul-profundo: #154490; --vermelho-profundo: #7a1c33;
+  --verde-profundo: #125a3d; --roxo-profundo: #492c95; --ouro-profundo: #694818;
+  /* nomes antigos, mantidos para os jogos */
+  --papel: #ffffff; --azul-claro: rgba(58,166,255,.18); --lapis: var(--ouro); --lapis-claro: rgba(255,200,61,.18);
+  --certo: var(--verde); --certo-claro: rgba(59,214,127,.16); --erro: #ff8a8e; --erro-claro: rgba(255,91,97,.16);
+  --titulo: "Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --fonte: "Nunito", Roboto, "Segoe UI", system-ui, sans-serif;
+  --cor-jogo: var(--azul); --cor-jogo-escura: var(--azul-escuro); --cor-jogo-profunda: var(--azul-profundo);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  color: var(--tinta); font: 600 17px/1.45 var(--fonte);
+  background-color: var(--fundo);
+  background-image:
+    radial-gradient(1200px 500px at 50% -120px, var(--fundo-2), transparent 70%),
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,.06) 1px, transparent 1.5px);
+  background-size: auto, 22px 22px;
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  -webkit-tap-highlight-color: transparent;
+}
+h1, h2, h3 { margin: 0; line-height: 1.1; text-wrap: balance; font-family: var(--titulo); font-weight: 400; letter-spacing: .01em; }
+p { margin: 0; }
+button { font: inherit; }
+:focus-visible { outline: 3px solid var(--ouro); outline-offset: 3px; }
+
+/* Texto de "jogo": branco com contorno e sombra */
+.titulo-jogo { text-shadow: 0 3px 0 var(--sombra), 0 0 1px var(--sombra); -webkit-text-stroke: 1px rgba(0,0,0,.35); paint-order: stroke fill; }
+
+/* Topo */
+.topo {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 10px;
+  background: linear-gradient(180deg, rgba(23,18,63,.96), rgba(23,18,63,.85));
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid rgba(255,255,255,.06);
+}
+.marca { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.marca-coruja { width: 34px; height: 34px; flex: none; border-radius: 8px; }
+.marca-nome {
+  font-family: var(--titulo); font-size: 1.35rem;
+  background: linear-gradient(180deg, #fff3b0, var(--ouro) 55%, #ff9f1c);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 2px 0 var(--sombra));
+}
+.topo-acoes { display: flex; gap: 8px; }
+.voltar, .som {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 44px; min-width: 44px; justify-content: center; padding: 0 14px;
+  border-radius: 14px; border: 0; cursor: pointer; color: #fff;
+  font-family: var(--titulo); font-size: 1rem;
+  background: var(--cartao-2); box-shadow: 0 4px 0 var(--sombra);
+}
+.som.desligado { opacity: .45; text-decoration: line-through; }
+.voltar:active, .som:active { translate: 0 3px; box-shadow: 0 1px 0 var(--sombra); }
+
+#palco { max-width: 720px; margin: 0 auto; padding: 18px 16px 56px; display: grid; gap: 22px; }
+
+/* Início */
+.boas-vindas { display: grid; gap: 6px; text-align: center; padding: 6px 0 2px; }
+.boas-vindas h1 { font-size: clamp(2rem, 9vw, 2.8rem); }
+.boas-vindas p { color: var(--apagado); }
+.familia { display: grid; gap: 12px; }
+.familia h2 {
+  font-size: 1.05rem; color: var(--ouro); display: flex; align-items: center; gap: 10px;
+}
+.familia h2::after { content: ""; flex: 1; height: 2px; background: linear-gradient(90deg, rgba(255,200,61,.5), transparent); }
+.cartoes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 560px) { .cartoes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.cartao {
+  position: relative; overflow: hidden;
+  display: grid; justify-items: center; align-content: start; gap: 6px; text-align: center;
+  padding: 16px 10px 14px; border-radius: 20px; color: #fff; text-decoration: none;
+  background: linear-gradient(165deg, var(--cor-jogo-escura) 0%, var(--cor-jogo-profunda) 100%);
+  box-shadow: 0 6px 0 var(--sombra), inset 0 3px 0 var(--cor-jogo), inset 0 -4px 0 rgba(0,0,0,.18);
+}
+.cartao::before { /* brilho diagonal */
+  content: ""; position: absolute; inset: -40% -60% auto auto; width: 120%; height: 70%;
+  background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,.22) 50%, transparent 60%);
+  transform: rotate(8deg); pointer-events: none;
+}
+.cartao:active { translate: 0 4px; box-shadow: 0 2px 0 var(--sombra), inset 0 2px 0 rgba(255,255,255,.35); }
+.emblema {
+  width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 3rem; line-height: 1;
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.55), rgba(255,255,255,.12) 45%, rgba(0,0,0,.18) 100%);
+  box-shadow: inset 0 -4px 0 rgba(0,0,0,.2), 0 4px 10px rgba(0,0,0,.25);
+  filter: drop-shadow(0 3px 0 rgba(0,0,0,.25));
+}
+.cartao strong { font-family: var(--titulo); font-weight: 400; font-size: 1.15rem; line-height: 1.1; text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+.cartao .resumo { font-size: .82rem; line-height: 1.3; opacity: .92; }
+.selos { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; margin-top: 2px; }
+.selo { font-size: .7rem; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: rgba(0,0,0,.25); }
+.em-breve { color: var(--apagado); text-align: center; font-size: .9rem; }
+
+
+/* Peças compartilhadas pelos jogos */
+.jg { display: grid; gap: 14px; }
+.faixa {
+  position: relative; overflow: hidden; border-radius: 20px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(165deg, var(--cor-jogo-escura), var(--cor-jogo-profunda));
+  box-shadow: 0 6px 0 var(--sombra), inset 0 3px 0 var(--cor-jogo);
+}
+.faixa .emblema { width: 64px; height: 64px; font-size: 2.3rem; flex: none; }
+.faixa h1 { font-size: 1.6rem; text-shadow: 0 3px 0 rgba(0,0,0,.35); }
+.regras {
+  background: var(--cartao); border-radius: 16px; padding: 12px 16px;
+  box-shadow: 0 4px 0 var(--sombra);
+}
+.regras summary { font-family: var(--titulo); font-size: 1.05rem; cursor: pointer; color: var(--ouro); list-style-position: inside; }
+.regras ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.regras li::marker { color: var(--ouro); }
+.aviso {
+  font-weight: 800; border-radius: 14px; padding: 10px 14px; min-height: 2.8em;
+  background: var(--cartao); color: var(--tinta); box-shadow: 0 4px 0 var(--sombra);
+}
+.aviso:empty { visibility: hidden; }
+.aviso.certo { background: linear-gradient(165deg, var(--verde-escuro), var(--verde-profundo)); color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.3); }
+.aviso.erro { background: linear-gradient(165deg, var(--vermelho-escuro), var(--vermelho-profundo)); color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.3); }
+@media (prefers-reduced-motion: no-preference) {
+  .aviso.erro { animation: tremer .35s; }
+  .aviso.certo { animation: pular .5s cubic-bezier(.2, 1.6, .4, 1); }
+  @keyframes tremer { 20%, 60% { translate: -6px 0; } 40%, 80% { translate: 6px 0; } }
+  @keyframes pular { from { transform: scale(.85); } }
+}
+.acoes { display: flex; gap: 10px; flex-wrap: wrap; }
+.botao {
+  flex: 1; min-height: 54px; padding: 6px 14px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 0; border-radius: 16px; color: #fff;
+  font-family: var(--titulo); font-size: 1.15rem; letter-spacing: .02em; text-shadow: 0 2px 0 rgba(0,0,0,.35);
+  background: linear-gradient(180deg, var(--cartao-2), var(--cartao));
+  box-shadow: 0 5px 0 var(--sombra), inset 0 2px 0 rgba(255,255,255,.2);
+}
+.botao.principal { background: linear-gradient(180deg, #7ef0ae, var(--verde) 60%); box-shadow: 0 5px 0 var(--verde-profundo), inset 0 2px 0 rgba(255,255,255,.45); color: #083a1f; text-shadow: 0 1px 0 rgba(255,255,255,.35); }
+.botao.dourado { background: linear-gradient(180deg, #ffe07a, var(--ouro) 45%, var(--ouro-escuro)); box-shadow: 0 5px 0 #7a5000, inset 0 2px 0 rgba(255,255,255,.5); color: #4a2d00; text-shadow: 0 1px 0 rgba(255,255,255,.4); }
+.botao:active:not(:disabled) { translate: 0 4px; box-shadow: 0 1px 0 var(--sombra); }
+.botao:disabled { filter: grayscale(.8) brightness(.7); cursor: default; }
+.contagem { color: var(--apagado); text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; }
+.escolhas { display: flex; flex-wrap: wrap; gap: 8px; }
+.escolhas button {
+  min-height: 44px; padding: 6px 14px; cursor: pointer; border: 0; border-radius: 12px;
+  color: var(--apagado); font-weight: 800; background: var(--cartao); box-shadow: 0 3px 0 var(--sombra);
+}
+.escolhas button[aria-pressed="true"] {
+  color: #fff; background: linear-gradient(180deg, var(--azul-escuro), var(--azul-profundo));
+  box-shadow: 0 3px 0 #0d3a78, inset 0 2px 0 var(--azul); text-shadow: 0 1px 0 rgba(0,0,0,.3);
+}
+.rotulo { display: block; margin-bottom: 4px; font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--apagado); }
+.placar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.placar div {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  border-radius: 16px; padding: 8px 14px; color: #fff;
+  font-family: var(--titulo); font-size: 1.1rem; text-shadow: 0 2px 0 rgba(0,0,0,.3);
+  font-variant-numeric: tabular-nums; opacity: .55; transition: opacity .2s, transform .2s;
+  box-shadow: 0 4px 0 var(--sombra);
+}
+.placar div span:last-child { font-size: 1.6rem; }
+.placar .j1 { background: linear-gradient(165deg, var(--azul-escuro), var(--azul-profundo)); }
+.placar .j2 { background: linear-gradient(165deg, var(--vermelho-escuro), var(--vermelho-profundo)); }
+.placar .vez { opacity: 1; transform: scale(1.03); box-shadow: 0 4px 0 var(--sombra), 0 0 0 3px var(--ouro); }
+.j1 { color: var(--azul); }
+.j2 { color: var(--vermelho); }
+
+/* Confete */
+.confete { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+
+/* Quem está jogando (topo) */
+.quem {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px 0 6px;
+  border: 0; border-radius: 14px; cursor: pointer; color: #fff; font-weight: 800;
+  background: var(--cartao-2); box-shadow: 0 4px 0 var(--sombra);
+}
+.quem span:first-child { font-size: 1.5rem; }
+.quem-nome { max-width: 7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.marca { white-space: nowrap; min-height: 44px; }
+.voltar { white-space: nowrap; }
+@media (max-width: 420px) { .marca-nome { font-size: 1.05rem; } .marca-coruja { width: 28px; height: 28px; } .quem-nome, .voltar-texto { display: none; } .quem { padding: 0 8px; } .topo-acoes { gap: 6px; } }
+
+/* Samuca */
+.samuca { display: block; flex: none; filter: drop-shadow(0 4px 0 rgba(0,0,0,.3)); }
+.samuca-grande { display: grid; place-items: center; }
+.balao-samuca { display: flex; align-items: center; gap: 10px; }
+.balao-samuca p {
+  position: relative; flex: 1; min-width: 0; padding: 10px 14px; border-radius: 16px;
+  background: #fff; color: #1b1f3a; font-weight: 800; box-shadow: 0 4px 0 var(--sombra);
+}
+.balao-samuca p::before {
+  content: ""; position: absolute; left: -8px; top: 50%; translate: 0 -50%;
+  border: 8px solid transparent; border-right-color: #fff; border-left: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .balao-samuca.falou p { animation: pular .4s cubic-bezier(.2, 1.6, .4, 1); }
+}
+.saudacao { display: flex; align-items: center; gap: 12px; }
+.saudacao h1 { font-size: clamp(1.7rem, 7vw, 2.3rem); }
+.saudacao p { color: var(--apagado); }
+
+/* Escolha de jogador */
+.avatares { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+.avatar-cartao {
+  display: grid; justify-items: center; gap: 2px; padding: 12px 6px; cursor: pointer; text-align: center;
+  border: 0; border-radius: 18px; color: #fff; background: var(--cartao); box-shadow: 0 5px 0 var(--sombra);
+}
+.avatar-cartao .avatar { font-size: 2.6rem; line-height: 1.1; }
+.avatar-cartao strong { font-family: var(--titulo); font-weight: 400; font-size: 1.05rem; }
+.avatar-cartao small { font-size: .72rem; color: var(--apagado); line-height: 1.2; }
+.avatar-cartao.escolhido { background: linear-gradient(165deg, var(--azul), var(--azul-escuro)); box-shadow: 0 5px 0 #0d3a78, 0 0 0 3px var(--ouro); }
+.avatar-cartao.escolhido small { color: #fff; }
+.avatares.mini { grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); }
+.avatar-mini {
+  font-size: 1.9rem; min-height: 56px; border: 0; border-radius: 14px; cursor: pointer;
+  background: var(--cartao); box-shadow: 0 3px 0 var(--sombra);
+}
+.avatar-mini.escolhido { background: linear-gradient(165deg, var(--azul), var(--azul-escuro)); box-shadow: 0 3px 0 #0d3a78, 0 0 0 3px var(--ouro); }
+.vazio, .nota { color: var(--apagado); font-size: .9rem; }
+.avatares .vazio { grid-column: 1 / -1; }
+.rodape { text-align: center; }
+.rodape a { color: var(--apagado); font-size: .9rem; }
+a.botao { text-decoration: none; }
+
+/* PIN */
+.pin { display: grid; gap: 12px; justify-items: center; padding: 16px; border-radius: 20px; background: var(--cartao); box-shadow: 0 5px 0 var(--sombra); }
+.pin-titulo { font-family: var(--titulo); font-size: 1.15rem; text-align: center; }
+.pin-casas { display: flex; gap: 10px; }
+.pin-casas span {
+  width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; font-size: 1.6rem;
+  background: var(--fundo); box-shadow: inset 0 3px 0 rgba(0,0,0,.3);
+}
+.pin-casas span.cheia { background: var(--cartao-2); }
+.pin-teclas { display: grid; grid-template-columns: repeat(3, 72px); gap: 10px; }
+.pin-tecla {
+  height: 64px; border: 0; border-radius: 16px; cursor: pointer; color: #fff; font-size: 1.8rem;
+  font-family: var(--titulo); background: linear-gradient(180deg, var(--cartao-2), var(--cartao));
+  box-shadow: 0 5px 0 var(--sombra), inset 0 2px 0 rgba(255,255,255,.2);
+}
+.pin-teclas.figuras .pin-tecla { background: linear-gradient(180deg, #fff, #e3e8ff); }
+.pin-tecla:active { translate: 0 4px; box-shadow: 0 1px 0 var(--sombra); }
+.pin-apagar { flex: none; min-height: 44px; font-size: 1rem; }
+
+/* Formulários e painel */
+.painel-bloco { display: grid; gap: 8px; }
+.campo {
+  width: 100%; min-height: 50px; padding: 10px 14px; border-radius: 14px; border: 2px solid var(--linha);
+  background: var(--fundo); color: #fff; font: 800 1.1rem var(--fonte);
+}
+.campo:focus { border-color: var(--ouro); outline: none; }
+textarea.campo { font: 600 .8rem/1.4 ui-monospace, Consolas, monospace; resize: vertical; }
+.painel-lista { display: grid; gap: 14px; }
+.painel-crianca { display: grid; gap: 10px; padding: 14px; border-radius: 18px; background: var(--cartao); box-shadow: 0 5px 0 var(--sombra); }
+.painel-topo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.painel-topo .avatar { font-size: 2rem; }
+.painel-topo strong { font-family: var(--titulo); font-weight: 400; font-size: 1.2rem; }
+.painel-topo small { color: var(--apagado); }
+.painel-niveis { display: grid; gap: 6px; }
+.painel-niveis > div { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .9rem; }
+.ajuste { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.ajuste b { min-width: 3em; text-align: center; }
+.ajuste small { color: var(--apagado); min-width: 5.5em; }
+.ajuste button { width: 36px; height: 36px; border: 0; border-radius: 10px; background: var(--cartao-2); color: #fff; font-size: 1.2rem; cursor: pointer; }
+.botao.perigo { background: linear-gradient(180deg, var(--vermelho), var(--vermelho-escuro)); }
+
+/* Sala do jogo */
+.sala-resumo { color: var(--apagado); }
+.sala-opcoes { display: grid; gap: 12px; }
+.opcao {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px; text-align: left; cursor: pointer;
+  border: 0; border-radius: 20px; color: #fff;
+  background: linear-gradient(165deg, var(--laranja-escuro), var(--laranja-profundo));
+  box-shadow: 0 6px 0 var(--sombra), inset 0 3px 0 var(--laranja);
+}
+.opcao strong { display: block; font-family: var(--titulo); font-weight: 400; font-size: 1.3rem; text-shadow: 0 2px 0 rgba(0,0,0,.3); }
+.opcao small { font-size: .85rem; }
+.opcao:active { translate: 0 4px; box-shadow: 0 2px 0 var(--sombra); }
+
+/* Destaque "Para você agora" */
+.familia.destaque h2 { color: #fff; }
+.fita {
+  position: absolute; top: 10px; right: -30px; rotate: 35deg; z-index: 1;
+  padding: 2px 34px; font-family: var(--titulo); font-size: .75rem;
+  background: var(--ouro); color: #4a2d00; box-shadow: 0 2px 0 rgba(0,0,0,.25);
+}
+
+/* ---------- Desenhos e ícones ---------- */
+.arte { display: block; flex: none; }
+.icone { display: block; flex: none; }
+.emoji { font-size: 1.6em; line-height: 1; }
+.som, .voltar { gap: 6px; }
+.quem .arte { margin: -2px 0; }
+.emblema .arte, .emblema .samuca, .emblema .icone { filter: drop-shadow(0 3px 0 rgba(0,0,0,.2)); }
+
+/* ---------- Faixa do jogo com botões de ajuda e ajustes ---------- */
+.faixa h1 { flex: 1; min-width: 0; }
+.faixa-botoes { display: flex; gap: 8px; flex: none; }
+.faixa-botao {
+  width: 44px; height: 44px; border: 0; border-radius: 14px; cursor: pointer; color: #fff;
+  font-family: var(--titulo); font-size: 1.4rem; line-height: 1;
+  background: rgba(0,0,0,.22); box-shadow: inset 0 -3px 0 rgba(0,0,0,.2);
+}
+.faixa-botao:active { translate: 0 2px; }
+
+/* Primeira vez: convite para ver como joga (não dispara sozinho) */
+.convite-demo {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 16px;
+  background: var(--cartao); box-shadow: 0 4px 0 var(--sombra);
+}
+.convite-demo p { flex: 1; font-weight: 800; }
+.convite-demo .botao { flex: none; min-height: 44px; font-size: 1rem; }
+
+/* ---------- Regras aos poucos e fases guiadas à vista ---------- */
+.aprender { display: grid; gap: 8px; padding: 12px 14px; border-radius: 16px; background: var(--cartao-2); box-shadow: 0 4px 0 var(--sombra); }
+.aprender p { margin: 0; font-weight: 700; }
+.regras[data-modo="passo"] .regras-lista, .regras[data-modo="todas"] .regras-um { display: none; }
+.regras-um { display: grid; gap: 10px; }
+.regras-num { margin: 0; font: 400 1rem var(--titulo); color: var(--ouro); }
+.regras-texto { margin: 0; font-size: 1.15rem; font-weight: 700; line-height: 1.4; min-height: 3em; }
+.regras-pontos { display: flex; gap: 6px; }
+.regras-pontos i, .guiada-pontos i { width: 12px; height: 12px; border-radius: 50%; background: var(--linha); }
+.regras-pontos i.feito, .guiada-pontos i.feito { background: var(--ouro); }
+.guiada-pontos i.agora { background: #fff; box-shadow: 0 0 0 3px var(--ouro); }
+.regras-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.regras-nav .botao:disabled { opacity: .45; }
+.regras-trocar {
+  justify-self: center; border: 0; background: none; cursor: pointer; padding: 6px 8px;
+  font: 800 .9rem var(--fonte); color: var(--apagado); text-decoration: underline; text-underline-offset: 3px;
+}
+.guiada-barra {
+  display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 14px; border-radius: 16px;
+  background: var(--cartao-2); box-shadow: 0 4px 0 var(--sombra), inset 0 0 0 2px var(--ouro);
+}
+.guiada-rotulo { flex: 1; font-weight: 800; }
+.guiada-rotulo b { color: var(--ouro); }
+.guiada-pontos { display: flex; gap: 6px; }
+.guiada-barra .botao { flex: none; width: auto; min-height: 40px; padding: 6px 16px; }
+.guiada-rotulo { white-space: nowrap; }
+
+/* ---------- Painel de ajustes (sobe de baixo) ---------- */
+.folha {
+  margin: auto auto 0; width: min(100%, 560px); max-width: 100%; max-height: 80vh;
+  border: 0; border-radius: 22px 22px 0 0; padding: 16px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  background: var(--fundo-2); color: #fff; box-shadow: 0 -8px 0 var(--sombra);
+}
+.folha::backdrop { background: rgba(11,8,38,.6); }
+.folha[open] { display: grid; gap: 14px; }
+.folha-topo { display: flex; align-items: center; justify-content: space-between; }
+.folha-topo strong { font-family: var(--titulo); font-weight: 400; font-size: 1.3rem; }
+.folha-fechar { width: 44px; height: 44px; border: 0; border-radius: 14px; background: var(--cartao); color: #fff; font-size: 1.1rem; cursor: pointer; }
+.folha .regras { box-shadow: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .folha[open] { animation: subir .28s cubic-bezier(.2, .9, .3, 1); }
+  @keyframes subir { from { transform: translateY(40%); opacity: .4; } }
+}
+
+/* ---------- Mãozinha que demonstra (só quando a criança pede) ---------- */
+.demo { position: fixed; inset: 0; z-index: 60; background: rgba(11,8,38,.25); cursor: pointer; }
+.demo-mao { position: fixed; left: 50%; top: 110%; width: 56px; height: 56px; transition: left .6s ease, top .6s ease; filter: drop-shadow(0 6px 6px rgba(0,0,0,.4)); }
+.demo-mao.toca { animation: tocar .5s ease; }
+@keyframes tocar { 40% { transform: scale(.8) translateY(4px); } }
+.demo-texto { position: fixed; left: 16px; right: 16px; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); text-align: center; font-family: var(--titulo); font-size: 1.2rem; text-shadow: 0 2px 0 var(--sombra); }
+.demo-pular { position: fixed; right: 16px; top: calc(env(safe-area-inset-top, 0px) + 70px); font-size: .8rem; padding: 4px 10px; border-radius: 99px; background: rgba(0,0,0,.4); }
+.demo-alvo { outline: 4px solid var(--ouro); outline-offset: 4px; border-radius: 12px; }
+
+/* ---------- Placar: quem espera continua legível ---------- */
+.placar div { opacity: 1; filter: saturate(.55) brightness(.8); }
+.placar .vez { filter: none; }
+.placar .arte, .placar .samuca { width: 30px; height: 30px; }
+.placar div span:first-child { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+
+/* ---------- Samuca comemorando (bate as asas uma vez, quando a criança vence) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .balao-samuca.comemora .asa-e { animation: asa-e .35s ease-in-out 1; transform-box: fill-box; transform-origin: top right; }
+  .balao-samuca.comemora .asa-d { animation: asa-d .35s ease-in-out 1; transform-box: fill-box; transform-origin: top left; }
+  @keyframes asa-e { 50% { transform: rotate(35deg); } }
+  @keyframes asa-d { 50% { transform: rotate(-35deg); } }
+}
+
+/* ---------- Mapa da vila ---------- */
+.saudacao { position: relative; }
+.saudacao-texto { flex: 1; min-width: 0; }
+.estante-botao {
+  flex: none; display: grid; justify-items: center; gap: 0; padding: 6px 10px; border-radius: 16px;
+  text-decoration: none; color: #fff; font-family: var(--titulo);
+  background: var(--cartao); box-shadow: 0 4px 0 var(--sombra);
+}
+.mapa {
+  /* A altura nunca passa da tela: a vila inteira cabe sem rolar (a largura acompanha a proporção). */
+  position: relative; width: min(100%, calc((100dvh - 150px) * 100 / 160)); min-width: 300px; aspect-ratio: 100 / 160;
+  margin: 0 auto; container-type: inline-size;
+  border-radius: 24px; overflow: hidden; box-shadow: 0 6px 0 var(--sombra), inset 0 0 0 3px rgba(255,255,255,.1);
+}
+.mapa-fundo { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mapa-rotulo {
+  position: absolute; translate: -50% -50%; white-space: nowrap;
+  font-family: var(--titulo); font-size: clamp(.68rem, 3.8cqw, 1rem); color: #fff; padding: .2em .8em; border-radius: 99px;
+  background: rgba(23,18,63,.72); box-shadow: 0 2px 0 rgba(0,0,0,.25);
+}
+.mapa-lugar {
+  position: absolute; translate: -50% -50%; display: grid; justify-items: center; gap: 2px;
+  text-decoration: none; color: #fff; width: 28cqw; text-align: center;
+}
+.mapa .mapa-base .arte { width: 15.7cqw; height: 15.7cqw; }
+.mapa-base {
+  width: 21cqw; height: 21cqw; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--cor-jogo) 60%, white), var(--cor-jogo) 55%, var(--cor-jogo-escura));
+  box-shadow: 0 5px 0 rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.4);
+}
+.mapa-nome {
+  font-family: var(--titulo); font-size: clamp(.66rem, 3.6cqw, .95rem); line-height: 1.1; padding: 2px 8px; border-radius: 10px;
+  background: rgba(23,18,63,.78); text-shadow: 0 1px 0 rgba(0,0,0,.4);
+}
+.mapa-lugar:active .mapa-base { translate: 0 3px; box-shadow: 0 2px 0 rgba(0,0,0,.35); }
+.mapa-lugar.sugerido .mapa-base { box-shadow: 0 5px 0 rgba(0,0,0,.35), 0 0 0 4px var(--ouro), 0 0 18px var(--ouro); }
+.mapa-selo {
+  position: absolute; top: -12px; z-index: 1; white-space: nowrap;
+  font-family: var(--titulo); font-size: .7rem; padding: 1px 8px; border-radius: 99px;
+  background: var(--ouro); color: #4a2d00;
+}
+.mapa-obra {
+  position: absolute; translate: -50% -50%; display: grid; place-items: center;
+  width: 23cqw; height: 16cqw; border-radius: 10px; font-family: var(--titulo); font-size: clamp(.62rem, 3.3cqw, .9rem); text-align: center;
+  color: #3a2418; background: repeating-linear-gradient(135deg, #ffc83d 0 10px, #3a2418 10px 20px); padding: 5px;
+}
+.mapa-obra span { background: #ffe9a8; border-radius: 6px; padding: 3px 6px; }
+/* Tamanhos do mapa em cqw: lugares, nomes e placas acompanham a largura do mapa (referência: 343px). */
+
+/* ---------- Estante ---------- */
+.estante { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+.trofeu {
+  display: grid; justify-items: center; gap: 4px; padding: 14px 10px; text-align: center; border-radius: 18px;
+  background: var(--cartao); box-shadow: 0 5px 0 var(--sombra);
+}
+.trofeu strong { font-family: var(--titulo); font-weight: 400; font-size: 1rem; }
+.trofeu small { color: var(--apagado); font-size: .8rem; line-height: 1.25; }
+.trofeu:not(.tem) .trofeu-arte { filter: grayscale(1) brightness(.55); opacity: .7; }
+.trofeu.tem { background: linear-gradient(165deg, #5a4aa8, var(--cartao)); box-shadow: 0 5px 0 var(--sombra), inset 0 0 0 2px var(--ouro); }
+
+/* ---------- Aviso de conquista ---------- */
+.aviso-conquista {
+  position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 72px); translate: -50% 0; z-index: 55;
+  display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 18px; max-width: calc(100% - 32px);
+  background: linear-gradient(180deg, #ffe07a, var(--ouro)); color: #4a2d00; font-family: var(--titulo);
+  box-shadow: 0 5px 0 #7a5000; transition: opacity .5s, translate .5s;
+}
+.aviso-conquista.sai { opacity: 0; translate: -50% -20px; }
+@media (prefers-reduced-motion: no-preference) {
+  .aviso-conquista { animation: descer .4s cubic-bezier(.2, 1.4, .4, 1); }
+  @keyframes descer { from { translate: -50% -40px; opacity: 0; } }
+}
+
+/* ---------- Transição suave entre telas ---------- */
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .22s; }
+.faixa-botao { display: grid; place-items: center; }
+
+/* ---------- Paleta "meio-termo" (decidido em 30/09/2026) ----------
+   Vila, menus e faixas de título seguem vibrantes. Dentro do jogo, onde a criança passa o
+   tempo pensando, cores mais calmas: cenários menos saturados e avisos em tons pastel. */
+.rp-cena, .el-cena, .th-templo, .nim-acampamento, .pc-tabuleiro { filter: saturate(.7) brightness(.97); }
+.aviso.certo { background: #d4efdf; color: #1f5a3a; text-shadow: none; }
+.aviso.erro { background: #f5dcd9; color: #7a2e2a; text-shadow: none; }
+.placar .j1 { background: linear-gradient(165deg, #4a76b0, #3f68a0); }
+.placar .j2 { background: linear-gradient(165deg, #a95a61, #9a4c53); }
+.placar .vez { box-shadow: 0 4px 0 var(--sombra), 0 0 0 3px #f3dfa2; }
+.jg .botao.principal { background: linear-gradient(180deg, #a6e6c1, #6fca97); box-shadow: 0 5px 0 #245f40, inset 0 2px 0 rgba(255,255,255,.35); color: #0b3a22; text-shadow: 0 1px 0 rgba(255,255,255,.35); }
+.jg .botao.dourado { background: linear-gradient(180deg, #fbe7a6, #f0cf6e 45%, #d4a843); box-shadow: 0 5px 0 #7a5a10, inset 0 2px 0 rgba(255,255,255,.4); }
+.pc-linha.dono0 { stroke: #5b8fce; }
+.pc-linha.dono1 { stroke: #cf6e73; }
+
+/* ---------- Ouvir (voz do Android) ---------- */
+.ouvir {
+  flex: none; width: 40px; height: 40px; border: 0; border-radius: 12px; cursor: pointer;
+  display: inline-grid; place-items: center; vertical-align: middle;
+  color: #fff; background: var(--cartao-2); box-shadow: 0 3px 0 var(--sombra);
+}
+.ouvir:active { translate: 0 2px; box-shadow: 0 1px 0 var(--sombra); }
+.aviso-linha { display: flex; gap: 8px; align-items: stretch; }
+.aviso-linha .aviso { flex: 1; min-width: 0; }
+.aviso-linha .ouvir { height: auto; min-height: 44px; }
+.balao-samuca .ouvir { width: 44px; height: 44px; }
+.pin-titulo .ouvir, #entrar-dica .ouvir { margin-left: 8px; width: 44px; height: 44px; }
+.aviso:empty + .ouvir { visibility: hidden; }
+
+/* ---------- Pausa sugerida (só no fim de uma partida) ---------- */
+.pausa-card {
+  display: grid; gap: 10px; padding: 14px; border-radius: 18px;
+  background: #3a3170; box-shadow: 0 5px 0 var(--sombra), inset 0 0 0 2px #f3dfa2;
+}
+.pausa-card p { font-weight: 800; }
+.descanso { display: grid; gap: 16px; justify-items: center; text-align: center; padding-block: 24px; }
+.descanso p { max-width: 32ch; color: var(--apagado); font-size: 1.1rem; }
+
+/* ---------- Impressão ---------- */
+.impressao { display: none; }
+@media print {
+  body.imprimindo > *:not(.impressao) { display: none !important; }
+  body.imprimindo { background: #fff !important; color: #000 !important; padding: 0 !important; }
+  .impressao { display: block; font-family: Georgia, "Times New Roman", serif; color: #000; }
+  .impressao h1 { font-size: 22pt; margin: 0 0 8pt; }
+  .impressao h2 { font-size: 14pt; margin: 14pt 0 6pt; }
+  .impressao p, .impressao li { font-size: 12pt; line-height: 1.45; }
+  .impressao svg { width: 100%; max-width: 15cm; height: auto; display: block; margin: 8pt auto; }
+  .impressao .quebra { break-before: page; }
+  .impressao .gabarito svg { max-width: 8cm; }
+  .impressao table { border-collapse: collapse; margin: 6pt 0; }
+  .impressao td, .impressao th { border: 1px solid #000; padding: 4pt 10pt; font-size: 12pt; text-align: center; }
+  .impressao-rodape { margin-top: 18pt; font-size: 9pt !important; color: #555; }
+  @page { margin: 1.6cm; }
+}
+
+/* ---------- Onda 1: fim de partida, o que treina, preferências, acessibilidade, modo leve ---------- */
+.fim-card {
+  display: grid; gap: 10px; padding: 14px; border-radius: 18px;
+  background: var(--cartao); box-shadow: 0 5px 0 var(--sombra);
+}
+.fim-titulo { font-family: var(--titulo); font-size: 1.2rem; color: var(--ouro); }
+.fim-fora { color: var(--apagado); display: flex; gap: 8px; align-items: flex-start; }
+.fim-fora b { color: #fff; }
+.fim-card .acoes .botao { flex: 1 1 0; }
+.treina { color: var(--apagado); font-size: .95rem; }
+.treina b { color: var(--ouro); }
+.painel-prefs { display: flex; flex-wrap: wrap; gap: 6px; }
+.pref {
+  border: 0; border-radius: 99px; padding: 6px 12px; cursor: pointer;
+  font: 800 .82rem var(--fonte); color: var(--apagado); background: var(--fundo);
+}
+.pref[aria-pressed="true"] { background: var(--verde); color: #04301a; }
+
+/* Animações lentas (acessibilidade): tudo o que se move vai mais devagar. */
+body.lento *, body.lento *::before, body.lento *::after { animation-duration: 1.2s !important; transition-duration: .7s !important; }
+
+/* Alto contraste (acessibilidade): texto e contornos mais fortes, cenários sem esmaecer. */
+body.contraste { --apagado: #ffffff; }
+body.contraste .rp-cena, body.contraste .el-cena, body.contraste .th-templo,
+body.contraste .nim-acampamento, body.contraste .pc-tabuleiro { filter: none; }
+body.contraste .aviso.certo { background: #0f5a33; color: #fff; }
+body.contraste .aviso.erro { background: #7a1a20; color: #fff; }
+body.contraste .cm-favo polygon { stroke: #3a2000; stroke-width: 2.6; }
+body.contraste .cm-favo text { font-size: 19px; }
+body.contraste .botao, body.contraste .regras, body.contraste .aviso { outline: 2px solid rgba(255,255,255,.55); }
+
+/* Modo leve (celular antigo): sem sombras desfocadas, filtros nem transições. */
+body.leve * { transition: none !important; animation: none !important; backdrop-filter: none !important; }
+body.leve .samuca, body.leve .emblema .arte, body.leve .pc-linha, body.leve .pc-ponto, body.leve .mapa-fundo,
+body.leve .rp-cena, body.leve .el-cena, body.leve .th-templo, body.leve .nim-acampamento, body.leve .pc-tabuleiro { filter: none !important; }
+body.leve .topo { background: var(--fundo); }
+
+/* ---------- Onda 2: dicas em degraus, segredo, fases guiadas ---------- */
+.dica-regiao { outline: 3px dashed #f3dfa2 !important; outline-offset: 3px; border-radius: 10px; }
+.dica-jogada { outline: 4px solid var(--ouro) !important; outline-offset: 3px; border-radius: 10px; box-shadow: 0 0 16px rgba(255,200,61,.7) !important; }
+svg .dica-regiao, svg .dica-jogada { outline: none !important; }
+svg .dica-regiao polygon, svg .dica-regiao rect, svg .dica-regiao line { stroke: #f3dfa2 !important; stroke-width: 3 !important; stroke-dasharray: 4 3; }
+svg .dica-jogada polygon, svg .dica-jogada rect, svg line.dica-jogada, svg .dica-jogada line { stroke: var(--ouro) !important; stroke-width: 5 !important; stroke-dasharray: none; }
+svg .pc-alvo.dica-jogada { fill: rgba(255,200,61,.22) !important; }
+.pc-livre:has(.pc-alvo.dica-jogada) .pc-candidata { opacity: 1; stroke: var(--ouro); }
+.segredo { margin: 0; padding-left: 1.3em; display: grid; gap: 10px; font-size: 1.02rem; }
+.segredo li::marker { color: var(--ouro); font-family: var(--titulo); }
+
+/* ---------- Diário de bordo, carimbos e filtro por interesse ---------- */
+.estante-botao span { font-size: .8rem; }
+.abas { display: flex; gap: 8px; }
+.aba {
+  flex: 1; text-align: center; padding: 10px; border-radius: 14px; text-decoration: none;
+  font-family: var(--titulo); color: var(--apagado); background: var(--cartao); box-shadow: 0 4px 0 var(--sombra);
+}
+.aba[aria-selected="true"] { color: #3a2400; background: linear-gradient(180deg, #fbe7a6, #f0cf6e); box-shadow: 0 4px 0 #7a5a10; }
+#conteudo-diario { display: grid; gap: 16px; }
+/* A página é de papel claro (calma), com tinta escura. */
+.pagina {
+  display: grid; gap: 10px; padding: 16px; border-radius: 16px;
+  background: linear-gradient(180deg, #f6ecd2, #efe0bd); color: #3a2a18;
+  box-shadow: 0 5px 0 var(--sombra), inset 0 0 0 1px #d9c49a;
+}
+.pagina-topo { display: flex; gap: 12px; align-items: center; }
+.pagina-topo h2 { font-size: 1.25rem; color: #5a3a1a; }
+.pagina-topo small { color: #65502f; font-size: .8rem; }
+.pagina-resumo { font-weight: 800; }
+.pagina-curiosidade { display: flex; gap: 8px; align-items: flex-start; font-size: .95rem; }
+.pagina-curiosidade b { color: #8a4412; }
+.pagina .ouvir { background: #8a5a2a; }
+.pagina-carimbos {
+  position: relative; height: 150px; border-radius: 12px; touch-action: none;
+  background: repeating-linear-gradient(180deg, transparent 0 27px, rgba(138,90,42,.18) 27px 28px);
+  border: 2px dashed rgba(138,90,42,.35);
+}
+.carimbo { position: absolute; translate: -50% -50%; cursor: grab; filter: drop-shadow(0 2px 0 rgba(0,0,0,.2)); opacity: .92; }
+.carimbo:active { cursor: grabbing; }
+.carimbo.escolhido { outline: 3px dashed var(--ouro); outline-offset: 4px; border-radius: 12px; }
+.carimbo-botao { min-width: 44px; min-height: 44px; }
+.bandeja { display: flex; flex-wrap: wrap; gap: 6px; }
+.carimbo-botao { border: 0; border-radius: 12px; padding: 4px; background: rgba(138,90,42,.15); cursor: pointer; }
+.pagina .nota { color: #65502f; }
+/* Filtros quebram linha (todos à vista, nada escondido em rolagem) e têm ícone para quem não lê. */
+.interesses { display: flex; flex-wrap: wrap; gap: 6px; }
+.interesse, .vista {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px;
+  flex: none; border: 0; border-radius: 99px; padding: 6px 12px; cursor: pointer;
+  font: 800 .88rem var(--fonte); color: var(--apagado); background: var(--cartao); box-shadow: 0 3px 0 var(--sombra);
+}
+.interesse .curto { display: none; }
+@media (max-width: 600px) {
+  .interesse .longo { display: none; } .interesse .curto { display: inline; }
+  .interesse, .vista { padding: 6px 10px; font-size: .84rem; gap: 5px; }
+  .interesses { gap: 5px; justify-content: center; }
+}
+.interesse[aria-pressed="true"], .vista[aria-pressed="true"] { color: #06203f; background: var(--azul); }
+/* Fora do interesse: só o emblema apaga; o nome continua legível. Nada some nem tranca. */
+.mapa-lugar.fora-do-interesse .mapa-base, .cartao-jogo.fora-do-interesse .mapa-base { opacity: .4; filter: grayscale(.8); }
+.mapa-lugar.fora-do-interesse .mapa-nome { color: #d6d1f5; }
+.cartao-jogo.fora-do-interesse { opacity: .6; }
+
+/* ---------- Mapa ou lista ---------- */
+.vistas { display: flex; gap: 6px; justify-content: center; margin-top: -10px; }
+.vista { font: 800 .88rem var(--fonte); color: var(--apagado); background: var(--cartao); box-shadow: 0 3px 0 var(--sombra); }
+.vila.vista-mapa .lista-jogos, .vila.vista-lista .mapa { display: none; }
+.lista-jogos { display: grid; gap: 16px; align-content: start; }
+.regiao { display: grid; gap: 8px; }
+.regiao-nome { margin: 0; font: 400 1.05rem var(--titulo); color: var(--apagado); }
+.regiao-obra { margin: 0; padding: 10px 14px; border-radius: 14px; border: 2px dashed var(--linha); color: var(--apagado); }
+.cartao-jogo {
+  position: relative; display: grid; grid-template-columns: 60px 1fr; gap: 12px; align-items: center;
+  padding: 10px 12px; border-radius: 18px; text-decoration: none; color: #fff;
+  background: linear-gradient(165deg, var(--cor-jogo-escura), var(--cor-jogo-profunda));
+  box-shadow: 0 5px 0 var(--sombra), inset 0 3px 0 var(--cor-jogo);
+}
+.cartao-jogo:active { translate: 0 3px; box-shadow: 0 2px 0 var(--sombra), inset 0 3px 0 var(--cor-jogo); }
+.cartao-jogo .mapa-base { width: 60px; height: 60px; }
+.cartao-jogo.sugerido { box-shadow: 0 5px 0 var(--sombra), inset 0 3px 0 var(--cor-jogo), 0 0 0 3px var(--ouro); }
+.cartao-jogo .mapa-selo { top: -10px; right: 12px; }
+.cartao-jogo-texto { display: grid; gap: 3px; min-width: 0; }
+.cartao-jogo-texto strong { font: 400 1.1rem var(--titulo); }
+.cartao-jogo-texto small { font-size: .88rem; line-height: 1.3; color: #ece9ff; }
+.cartao-jogo-tipo { display: inline-flex; align-items: center; gap: 4px; font-size: .78rem; font-weight: 800; color: #d6d1f5; }
+/* Tela larga (tablet deitado, computador): mapa e lista lado a lado, sem a troca. */
+@media (min-width: 900px) {
+  #palco:has(.vila) { max-width: 1040px; }
+  .mapa { width: max(300px, calc((100dvh - 270px) * 100 / 160)); }
+  .vistas { display: none; }
+  .vila { display: grid; grid-template-columns: auto minmax(320px, 1fr); gap: 24px; align-items: start; }
+  .vila.vista-mapa .lista-jogos { display: grid; }
+  .vila.vista-lista .mapa { display: block; }
+}
+
+/* Texto só para leitor de tela (estado de casas, andares e peças). */
+.so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* ---------- Celular deitado (tela baixa): tabuleiro à esquerda, Samuca, avisos e botões à direita ---------- */
+@media (orientation: landscape) and (max-height: 520px) {
+  #palco:has(.jg .faixa) { max-width: 100%; }
+  .jg:has(> :is(.rp-cena, .el-cena, .th-templo, .cm-favo-quadro, .nim-acampamento, .pc-tabuleiro)) {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); column-gap: 18px; align-items: start;
+  }
+  .jg:has(> :is(.rp-cena, .el-cena, .th-templo, .cm-favo-quadro, .nim-acampamento, .pc-tabuleiro)) > * { grid-column: 2; }
+  .jg > :is(.rp-cena, .el-cena, .th-templo, .cm-favo-quadro, .nim-acampamento, .pc-tabuleiro) { grid-column: 1; grid-row: 1 / span 30; }
+  /* Os que cabem na altura ficam parados enquanto a coluna da direita rola. A Raposa e o
+     Elevador (até 16 andares) são mais altos que a tela deitada: rolam junto com a página. */
+  .jg > :is(.th-templo, .cm-favo-quadro, .nim-acampamento, .pc-tabuleiro) { position: sticky; top: 72px; max-height: calc(100dvh - 80px); overflow-y: auto; }
+  #cm-svg, #pc-svg { max-height: calc(100dvh - 116px); }
+  .jg.th .th-pino { min-height: 190px; padding-top: 30px; }
+  .jg.nim .nim-fileira { min-height: 56px; }
+  .jg.nim .nim-palito { height: 50px; }
+  .jg.nim .nim-mesa { padding: 10px; gap: 6px; }
+  .jg.nim .nim-acampamento { padding: 12px 10px 30px; }
+  .jg.nim .nim-previa { margin-top: 6px; min-height: 0; font-size: .9rem; }
+  .faixa { padding: 8px 12px; }
+  .faixa .emblema { width: 44px; height: 44px; }
+  .faixa h1 { font-size: 1.25rem; }
+}
+
+/* ---------- Letra grande no celular (Android em 130% a 200%) ----------
+   Fora dos tabuleiros o texto cresce à vontade. Dentro deles, onde o desenho tem medida fixa
+   (botões redondos, andares, placas), a letra para de crescer num teto em px para não cortar. */
+.el-tecla b { font-size: min(2rem, 34px) !important; }
+.el-tecla small, .el-tecla .seta { font-size: min(.75rem, 13px) !important; }
+.el-visor { font-size: min(1.25rem, 22px) !important; }
+.el-predio .num { font-size: min(1rem, 17px) !important; }
+.rp-nome, .rp-placa, .rp-aqui { font-size: min(.8rem, 14px) !important; }
+.th-placas span { font-size: min(.95rem, 16px) !important; }
+.nim-num { font-size: min(1rem, 17px) !important; }
+.mapa-selo { font-size: min(.7rem, 12px) !important; }
+
+/* ---------- Letra fácil de ler (preferência de cada criança, no painel) ----------
+   Atkinson Hyperlegible (Braille Institute, OFL): letras que não se confundem (b/d, I/l/1, O/0).
+   Mais espaço entre letras, palavras e linhas no texto corrido, que é o que as pesquisas com
+   crianças disléxicas mostraram ajudar. Títulos e números dos tabuleiros ficam como estão. */
+body.letra-facil { --fonte: "Atkinson Hyperlegible", Verdana, Tahoma, system-ui, sans-serif; font-weight: 400; }
+body.letra-facil :is(p, li, .aviso, .regras-texto, .cartao-jogo-texto small, .fim-fora, .treina, .el-rota, .th-estado, .nim-previa, .nim-regra) {
+  letter-spacing: .05em; word-spacing: .14em; line-height: 1.6;
+}
+
+/* ---------- Para pais e avós ---------- */
+.cuidados-intro { margin: 0; color: var(--apagado); line-height: 1.5; display: flex; gap: 8px; align-items: flex-start; }
+.cuidados-intro a { color: var(--ouro); }
+.cuidados-bloco { display: grid; gap: 8px; padding: 14px 16px; border-radius: 18px; background: var(--cartao); box-shadow: 0 4px 0 var(--sombra); }
+.cuidados-bloco h2 { display: flex; align-items: center; gap: 8px; font-size: 1.15rem; color: var(--ouro); }
+.cuidados-bloco ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; line-height: 1.45; }
+.cuidados-bloco li::marker { color: var(--ouro); }
+.cuidados-botao { justify-self: center; text-align: center; font-size: 1rem; }
+
+/* ---------- Vila calma (preferência de cada criança, no painel) ----------
+   Para crianças sensíveis a cor e brilho: o mapa, os menus, as faixas e os botões ficam em tons
+   suaves, como já é dentro dos jogos, e nada brilha em volta. O contraste do texto continua. */
+body.vila-calma :is(.mapa, .faixa, .cartao-jogo, .opcao, .cartao, .estante-botao, .marca-nome, .avatar-cartao) { filter: saturate(.55) brightness(.97); }
+body.vila-calma :is(.interesse, .vista)[aria-pressed="true"] { background: #b9d3ec; color: #0e2a45; }
+body.vila-calma .botao.principal { background: linear-gradient(180deg, #a6e6c1, #6fca97); box-shadow: 0 5px 0 #245f40, inset 0 2px 0 rgba(255,255,255,.35); color: #0b3a22; text-shadow: 0 1px 0 rgba(255,255,255,.35); }
+body.vila-calma .botao.dourado { background: linear-gradient(180deg, #fbe7a6, #f0cf6e 45%, #d4a843); box-shadow: 0 5px 0 #7a5a10, inset 0 2px 0 rgba(255,255,255,.4); }
+body.vila-calma .mapa-lugar.sugerido .mapa-base { box-shadow: 0 5px 0 rgba(0,0,0,.35), 0 0 0 3px #f3dfa2; }
+body.vila-calma .cartao-jogo.sugerido { box-shadow: 0 5px 0 var(--sombra), inset 0 3px 0 var(--cor-jogo), 0 0 0 3px #f3dfa2; }
+body.vila-calma .mapa-selo { background: #f3dfa2; }

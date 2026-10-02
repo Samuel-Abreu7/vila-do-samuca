@@ -1,0 +1,4 @@
+Lilita One (Juan Montoreano) e Nunito (Vernon Adams e outros), ambas sob SIL Open Font License 1.1.
+https://openfontlicense.org — obtidas do Google Fonts, subconjunto latino.
+Atkinson Hyperlegible (Braille Institute of America), 400 e 700, também sob SIL Open Font License 1.1,
+obtida do Google Fonts em 01/10/2026, subconjunto latino. Usada na opção "Letra fácil de ler".

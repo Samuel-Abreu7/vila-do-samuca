@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Favicon da Vila do Samuca: só a cabeça da coruja, com poucos traços, para ler bem em 16 a 32 px -->
+  <rect width="64" height="64" rx="14" fill="#2a1c6e"/>
+  <path d="M13 22 L17 6 L26 17 Z M51 22 L47 6 L38 17 Z" fill="#7a4a24"/>
+  <ellipse cx="32" cy="37" rx="24" ry="23" fill="#9a6232"/>
+  <ellipse cx="32" cy="46" rx="13" ry="11" fill="#e9c58f"/>
+  <circle cx="21.5" cy="31" r="10.5" fill="#ffc83d"/>
+  <circle cx="42.5" cy="31" r="10.5" fill="#ffc83d"/>
+  <circle cx="21.5" cy="31" r="7.5" fill="#fff"/>
+  <circle cx="42.5" cy="31" r="7.5" fill="#fff"/>
+  <circle cx="22.5" cy="32" r="4" fill="#1b1f3a"/>
+  <circle cx="41.5" cy="32" r="4" fill="#1b1f3a"/>
+  <circle cx="24" cy="30.5" r="1.4" fill="#fff"/>
+  <circle cx="43" cy="30.5" r="1.4" fill="#fff"/>
+  <path d="M28 39 L36 39 L32 46 Z" fill="#ff9a3c" stroke="#c85f0f" stroke-width="1.2" stroke-linejoin="round"/>
+</svg>

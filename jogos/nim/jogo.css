@@ -1,0 +1,47 @@
+.nim-cfg { display: grid; gap: 12px; }
+/* Acampamento à noite: céu estrelado, mesa de madeira e fogueira ao lado (tudo parado) */
+.nim-regra {
+  justify-self: center; margin: 0; padding: 6px 14px; border-radius: 999px; text-align: center;
+  font-weight: 700; color: #4a3200; background: #f6e3a8;
+}
+.nim-regra span { color: #6b5320; }
+.nim-regra b { font-family: var(--titulo); font-weight: 400; font-size: 1.1em; }
+.nim-acampamento {
+  position: relative; border-radius: 22px; padding: 22px 12px 44px; overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 14%, #fff 0 1.5px, transparent 2px),
+    radial-gradient(circle at 34% 8%, #fff 0 1px, transparent 1.5px),
+    radial-gradient(circle at 70% 16%, #fff 0 1.5px, transparent 2px),
+    radial-gradient(circle at 88% 6%, #fff 0 1px, transparent 1.5px),
+    radial-gradient(circle at 55% 5%, #fff 0 1px, transparent 1.5px),
+    radial-gradient(ellipse 70% 40% at 85% 100%, rgba(255,154,60,.35), transparent 70%),
+    linear-gradient(180deg, #151040 0%, #2a1c6e 70%, #1d4a2a 70%, #163a20 100%);
+  box-shadow: 0 6px 0 var(--sombra);
+}
+.nim-mesa {
+  display: grid; gap: 12px; padding: 16px 10px; border-radius: 16px;
+  background: repeating-linear-gradient(90deg, #b97a45 0 38px, #a86a38 38px 40px);
+  box-shadow: 0 8px 0 #6b3f1c, inset 0 3px 0 rgba(255,255,255,.2);
+}
+.nim-fogueira { position: absolute; right: 10px; bottom: 4px; }
+.nim-fileira { display: grid; grid-template-columns: 30px 1fr; gap: 8px; min-height: 84px; align-items: center; border-radius: 12px; padding: 0 4px; }
+.nim-fileira.escolhida { background: rgba(255,240,190,.22); }
+.nim-num {
+  display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
+  font-family: var(--titulo); color: #4a2d10; background: #f3dcb4; box-shadow: 0 2px 0 rgba(0,0,0,.3);
+}
+.nim-palitos { display: flex; gap: 10px; align-items: center; justify-content: center; }
+.nim-palito {
+  width: 24px; height: 78px; border: 0; padding: 0; cursor: pointer; border-radius: 12px 12px 5px 5px;
+  background:
+    radial-gradient(circle at 50% 9px, #ff8a6b 0 6px, #e0322a 7px 12px, transparent 12.5px),
+    linear-gradient(90deg, #d9a066, #f6d8a8 45%, #c48a4f);
+  box-shadow: 0 4px 0 rgba(0,0,0,.35);
+}
+/* Marcado para tirar: levantado, com anel dourado tracejado e um pouco transparente. */
+.nim-palito.marcado { opacity: .7; translate: 0 -10px; outline: 3px dashed #ffe08a; outline-offset: 2px; box-shadow: 0 10px 10px rgba(0,0,0,.4); }
+.nim-previa { margin: 10px 4px 0; min-height: 2.6em; text-align: center; font-weight: 700; color: #fff4e0; }
+.nim-previa b { color: #ffe08a; }
+.nim-palito:disabled { cursor: default; }
+.nim-vazia { color: rgba(255,244,230,.7); font-family: var(--titulo); }
+@media (prefers-reduced-motion: no-preference) { .nim-palito { transition: translate .15s, opacity .15s; } }

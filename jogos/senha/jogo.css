@@ -1,0 +1,57 @@
+/* Senha: o cofre da vila. A porta mostra a tentativa; dentro, a senha aparece quando abre. Paleta calma. */
+.sn-nivel { margin: 0; text-align: center; font-family: var(--titulo); color: var(--apagado); }
+.sn-cofre {
+  position: relative; display: grid; gap: 10px; padding: 14px; border-radius: 22px;
+  background: linear-gradient(180deg, #7c86b4, #5d6690); box-shadow: 0 6px 0 var(--sombra), inset 0 0 0 4px #3d4466;
+}
+.sn-porta {
+  position: relative; display: grid; gap: 8px; justify-items: center; padding: 14px 44px 16px 14px; border-radius: 16px;
+  background: linear-gradient(180deg, #9aa4c7, #7c86b4); box-shadow: inset 0 0 0 3px #3d4466, inset 0 4px 0 rgba(255, 255, 255, .25);
+}
+.sn-porta-titulo { margin: 0; font-family: var(--titulo); color: #1d2140; }
+.sn-atual { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.sn-lugar {
+  width: 64px; height: 64px; border-radius: 14px; border: 3px dashed #3d4466; padding: 0; display: grid; place-items: center;
+  background: #e6e9f5; color: #3d4466; cursor: pointer;
+}
+.sn-lugar.cheio { border-style: solid; background: #fffdf6; }
+.sn-lugar:disabled { cursor: default; }
+.sn-num { font-family: var(--titulo); font-size: 1.4rem; opacity: .6; }
+.sn-macaneta {
+  position: absolute; right: 12px; top: 50%; width: 18px; height: 54px; translate: 0 -50%; border-radius: 9px;
+  background: linear-gradient(90deg, #c7880a, #ffd76a 50%, #c7880a); box-shadow: 0 2px 0 rgba(0, 0, 0, .3);
+}
+.sn-cofre.aberto .sn-porta { opacity: .55; }
+.sn-dentro {
+  display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; padding: 10px; border-radius: 14px;
+  background: #fff3c4; box-shadow: inset 0 0 0 3px #ffc83d;
+}
+.sn-dentro-titulo { width: 100%; text-align: center; font-family: var(--titulo); color: #4a2d00; }
+.sn-fig { display: block; line-height: 0; }
+
+.sn-escolha { margin: 0; text-align: center; font-weight: 800; color: var(--apagado); }
+.sn-bandeja { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.sn-fruta {
+  display: grid; justify-items: center; gap: 2px; width: 74px; min-height: 76px; padding: 6px 4px; border: 0; border-radius: 16px; cursor: pointer;
+  color: #fff; font: 800 .8rem var(--fonte); background: linear-gradient(180deg, var(--cartao-2), var(--cartao)); box-shadow: 0 4px 0 var(--sombra);
+}
+.sn-fruta:active:not(:disabled) { translate: 0 3px; box-shadow: 0 1px 0 var(--sombra); }
+.sn-fruta.usada { opacity: .35; }
+.sn-fruta:disabled:not(.usada) { opacity: .6; }
+.sn-fruta.dica-jogada, .sn-fruta.dica-regiao { box-shadow: 0 4px 0 var(--sombra), 0 0 0 3px var(--ouro); }
+
+.sn-historico { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.sn-linha {
+  display: grid; grid-template-columns: 28px auto 1fr; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 14px;
+  background: #f6efdc; color: #2c2416; box-shadow: 0 3px 0 var(--sombra);
+}
+.sn-n { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-family: var(--titulo); background: #e2d4ae; color: #4a3417; }
+.sn-figs { display: flex; gap: 2px; }
+.sn-pistas { display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; }
+.sn-pista { padding: 3px 8px; border-radius: 99px; font: 800 .78rem/1.2 var(--fonte); }
+.sn-pista.lugar { background: #cdeedb; color: #125a3d; }
+.sn-pista.fora { background: #fbe7b5; color: #6b4a10; }
+.sn-pista.zero { background: #ece6d6; color: #6d5a3a; }
+#sn-historico.dica-regiao { outline: 3px solid var(--ouro); outline-offset: 4px; border-radius: 14px; }
+#sn-niveis button.sugerida { box-shadow: 0 3px 0 var(--sombra), 0 0 0 3px var(--ouro); }
+@media (max-width: 380px) { .sn-fruta { width: 64px; } .sn-lugar { width: 56px; height: 56px; } }

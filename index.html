@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vila do Samuca</title>
+<meta name="description" content="Jogos de raciocínio lógico para a família.">
+<meta name="theme-color" content="#17123f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icones/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icones/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="icones/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<link rel="preload" href="fontes/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="app.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<header class="topo">
+  <a href="#/" class="marca" id="marca"><img class="marca-coruja" src="icones/favicon.svg" alt="" width="34" height="34"><span class="marca-nome">Vila do Samuca</span></a>
+  <div class="topo-acoes">
+    <button type="button" class="quem" id="quem" hidden aria-label="Trocar jogador"></button>
+    <button type="button" class="som" id="musica" aria-label="Música">🎵</button>
+    <button type="button" class="som" id="som" aria-label="Som ligado">🔊</button>
+    <button type="button" class="voltar" id="voltar" hidden aria-label="Voltar">◀<span class="voltar-texto"> Voltar</span></button>
+  </div>
+</header>
+<main id="palco"></main>
+</body>
+</html>

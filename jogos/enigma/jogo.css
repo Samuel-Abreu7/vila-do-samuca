@@ -1,0 +1,63 @@
+/* Enigma de lógica em grade: um caderno de detetive aberto sobre a mesa. Paleta calma (dentro do jogo). */
+.en-nivel { text-align: center; font-family: var(--titulo); color: var(--apagado); margin: 0; }
+.en-caderno {
+  display: grid; gap: 14px; padding: 14px 12px 16px 22px; border-radius: 18px; color: #2c2416;
+  background:
+    linear-gradient(90deg, transparent 12px, rgba(214, 90, 90, .35) 12px 14px, transparent 14px),
+    repeating-linear-gradient(180deg, transparent 0 27px, rgba(80, 120, 170, .18) 27px 28px),
+    linear-gradient(180deg, #fbf6e8, #f1e7cc);
+  box-shadow: 0 6px 0 var(--sombra), inset 0 0 0 1px #d8c79e;
+}
+.en-titulo { margin: 0; font-family: var(--titulo); font-size: 1.1rem; color: #5a3a1a; }
+.en-titulo-nota { font-family: var(--fonte); font-size: .8rem; font-weight: 700; color: #6d5a3a; }
+.en-pistas { margin: 6px 0 0; padding-left: 1.4em; display: grid; gap: 4px; }
+.en-pistas li::marker { font-family: var(--titulo); color: #8a4412; }
+.en-pista {
+  display: block; width: 100%; min-height: 40px; padding: 6px 8px; border: 0; border-radius: 10px; cursor: pointer;
+  text-align: left; font: 700 1rem/1.35 var(--fonte); color: #2c2416; background: transparent;
+}
+.en-pista:hover { background: rgba(138, 68, 18, .08); }
+.en-pista.riscada { color: #8a7a5a; text-decoration: line-through; text-decoration-thickness: 2px; }
+
+.en-tabelas { display: grid; gap: 14px; }
+.en-tabela { border-collapse: separate; border-spacing: 3px; margin: 0 auto; }
+.en-tabela caption { font-family: var(--titulo); font-size: 1rem; color: #5a3a1a; text-align: left; padding: 0 0 2px; }
+.en-tabela th { font-size: .78rem; font-weight: 800; color: #3a2a18; padding: 0 2px; }
+.en-tabela thead th { vertical-align: bottom; text-align: center; }
+.en-tabela tbody th { text-align: right; max-width: 6.5em; overflow-wrap: anywhere; line-height: 1.15; }
+.en-figura { display: block; line-height: 0; }
+.en-cor { display: block; width: 24px; height: 24px; margin: 0 auto 2px; border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .25); }
+.en-item { display: block; font-size: .72rem; }
+.en-cel {
+  width: 44px; height: 44px; border: 2px solid #c9b68a; border-radius: 8px; cursor: pointer; padding: 0;
+  font: 900 1.4rem/1 var(--fonte); color: #2c2416; background: #fffdf6;
+}
+.en-cel.sim { background: #cdeedb; border-color: #3e8f63; color: #125a3d; }
+.en-cel.nao { background: #ece6d6; border-color: #b8a985; color: #6d5a3a; }
+.en-cel:disabled { cursor: default; }
+.en-cel.dica-jogada, .en-cel.dica-regiao { box-shadow: 0 0 0 3px var(--ouro); }
+.en-pistas li.dica-regiao .en-pista, .en-pistas li.dica-jogada .en-pista { background: #fff1c2; box-shadow: 0 0 0 3px var(--ouro); }
+
+/* Marcar ✕ ou ✓: mesmo padrão da Colmeia (✓ de escolhido e título acima) */
+.en-marcando { margin: 0; text-align: center; font-weight: 800; color: var(--apagado); }
+.en-modos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.en-modo {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 54px;
+  border: 0; border-radius: 16px; cursor: pointer; color: #fff; font-family: var(--titulo); font-size: 1.1rem;
+  background: var(--cartao); box-shadow: 0 5px 0 var(--sombra); opacity: .6;
+}
+.en-modo[aria-pressed="true"] { opacity: 1; background: linear-gradient(180deg, #7a6a9e, #5a4d80); box-shadow: 0 5px 0 var(--sombra), 0 0 0 3px #f3dfa2; }
+.en-simbolo { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; font: 900 1.1rem/1 var(--fonte); }
+.en-simbolo.sim { background: #cdeedb; color: #125a3d; }
+.en-simbolo.nao { background: #ece6d6; color: #6d5a3a; }
+#en-niveis button.sugerida { box-shadow: 0 3px 0 var(--sombra), 0 0 0 3px var(--ouro); }
+
+/* Celular estreito com 5 pessoas: casas um pouco menores, ainda acima do mínimo de toque */
+@media (max-width: 380px) { .en-cel { width: 40px; height: 40px; } .en-caderno { padding-left: 16px; } }
+.en-titulo { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.en-titulo .ouvir { margin-left: auto; }
+/* Colunas iguais (o nome mais longo quebra a linha em vez de alargar a coluna) e pistas mais juntas */
+.en-tabela thead th:not(:first-child) { width: 48px; }
+.en-item { font-size: .68rem; overflow-wrap: anywhere; line-height: 1.1; }
+.en-pista { min-height: 44px; padding: 4px 8px; }
+.en-pistas { gap: 2px; }

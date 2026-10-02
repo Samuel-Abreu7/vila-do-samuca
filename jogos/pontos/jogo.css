@@ -1,0 +1,27 @@
+.pc-tabuleiro {
+  padding: 8px; border-radius: 22px;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.12) 0 3px, transparent 4px) 0 0 / 34px 30px,
+    linear-gradient(180deg, #6fd06a, #3fae4a);
+  box-shadow: 0 6px 0 var(--sombra), inset 0 0 0 6px #c98b4f, inset 0 0 0 8px #8a5424;
+}
+#pc-svg { display: block; width: 100%; max-width: 480px; margin: 0 auto; touch-action: manipulation; overflow: visible; }
+.pc-ponto { fill: #8a5424; stroke: #5e3514; stroke-width: 2; }
+.pc-guia { stroke: rgba(255,255,255,.5); stroke-width: 2.5; stroke-dasharray: 2 7; stroke-linecap: round; }
+.pc-guia.sugerida { stroke: var(--ouro); stroke-width: 7; stroke-dasharray: none; }
+.pc-alvo { fill: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pc-alvo:focus-visible { fill: rgba(255,255,255,.14); outline: none; }
+/* Linha candidata: ao passar o dedo, o mouse ou o foco, a cerquinha aparece clarinha antes de ser traçada. */
+.pc-candidata { stroke: #fff6c8; stroke-width: 7; stroke-linecap: round; opacity: 0; pointer-events: none; }
+.pc-livre:has(.pc-alvo:hover, .pc-alvo:active, .pc-alvo:focus-visible) .pc-candidata { opacity: .8; }
+.pc-linha { stroke-width: 8; stroke-linecap: round; }
+.pc-linha.dono0 { stroke: #2f7fd1; }
+.pc-linha.dono1 { stroke: #d9464c; }
+.pc-caixa.dono0 { fill: #7a5234; stroke: #9fd3ff; stroke-width: 2; }
+.pc-caixa.dono1 { fill: #7a5234; stroke: #ffb3b6; stroke-width: 2; }
+@media (prefers-reduced-motion: no-preference) {
+  .pc-linha.nova { stroke-dasharray: 1; animation: tracar .25s ease-out; }
+  @keyframes tracar { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  .pc-flor.nova { animation: florescer .45s cubic-bezier(.2, 1.5, .4, 1); transform-box: fill-box; transform-origin: center; }
+  @keyframes florescer { from { opacity: 0; scale: .2; } }
+}

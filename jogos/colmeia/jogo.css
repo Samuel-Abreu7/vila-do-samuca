@@ -1,0 +1,38 @@
+/* Colmeia: favos cor de mel sobre um quadro de madeira clara. Paleta calma (dentro do jogo). */
+.cm-nivel { text-align: center; font-family: var(--titulo); color: var(--apagado); }
+.cm-favo-quadro {
+  border-radius: 22px; padding: 10px;
+  background: radial-gradient(120% 100% at 50% 0%, #f7ecd2, #e8d4a8);
+  box-shadow: 0 6px 0 var(--sombra), inset 0 0 0 5px #c9a46a;
+}
+#cm-svg { display: block; width: 100%; max-width: 460px; margin: 0 auto; touch-action: manipulation; }
+.cm-favo polygon { stroke: #b9822a; stroke-width: 1.6; stroke-linejoin: round; }
+.cm-favo.oculto polygon { fill: #f3d58c; cursor: pointer; }
+.cm-favo.oculto:hover polygon, .cm-favo.oculto:focus-visible polygon { fill: #f8e3ad; outline: none; }
+.cm-favo.oculto polygon.tampa { fill: none; stroke: #d6ae5c; stroke-width: 1.4; stroke-dasharray: 3 3; pointer-events: none; } /* favo tampado com cera */
+.cm-favo.mel polygon { fill: #d7871c; stroke: #8a5414; }
+.cm-favo.mel path { fill: #fff1c2; stroke: #8a5414; } /* gota clara sobre o favo cheio: lê sem depender da cor */
+.cm-favo.vazio polygon { fill: #76583a; }
+.cm-favo text { fill: #fff6e2; font: 17px/1 var(--titulo); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.cm-favo.destaque polygon { stroke: #fff; stroke-width: 3.5; }
+@media (prefers-reduced-motion: no-preference) {
+  .cm-favo.nova { animation: favo .35s cubic-bezier(.2, 1.5, .4, 1); transform-box: fill-box; transform-origin: center; }
+  @keyframes favo { from { scale: .6; } }
+}
+.cm-contas { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; color: var(--apagado); font-weight: 800; }
+.cm-contas span { display: inline-flex; align-items: center; gap: 6px; }
+.cm-contas b { color: #fff; font-variant-numeric: tabular-nums; }
+.cm-modos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cm-modo {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 58px;
+  border: 0; border-radius: 16px; cursor: pointer; color: #fff; font-family: var(--titulo); font-size: 1.1rem;
+  background: var(--cartao); box-shadow: 0 5px 0 var(--sombra); opacity: .6;
+}
+.cm-marcando { margin: 0; text-align: center; font-weight: 800; color: var(--apagado); }
+.cm-modo[aria-pressed="true"]::before {
+  content: "✓"; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  font-size: .9rem; font-family: var(--fonte); color: #2b2150; background: #f3dfa2;
+}
+.cm-modo[aria-pressed="true"] { opacity: 1; background: linear-gradient(180deg, #7a6a9e, #5a4d80); box-shadow: 0 5px 0 var(--sombra), 0 0 0 3px #f3dfa2; }
+.cm-amostra { width: 24px; height: 24px; background: #76583a; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+#cm-tam button.sugerida { box-shadow: 0 3px 0 var(--sombra), 0 0 0 3px var(--ouro); }
