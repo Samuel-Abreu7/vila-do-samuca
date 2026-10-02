@@ -28,6 +28,7 @@ export const CONQUISTAS = [
   { id: "raposa-perfeita", jogo: "raposa", nome: "Travessia perfeita", como: "Levar todos em só 7 travessias." },
   { id: "raposa-pensou", jogo: "raposa", nome: "Pensou antes de remar", como: "Levar todos sem deixar ninguém em apuros nenhuma vez." },
   { id: "elevador-impossivel", jogo: "elevador", nome: "Detetive do impossível", como: "Descobrir uma fase sem solução." },
+  { id: "elevador-direto", jogo: "elevador", nome: "Direto ao andar", como: "Chegar com o menor número de apertos, sem pedir dica." },
   { id: "elevador-topo", jogo: "elevador", nome: "Até o último andar", como: "Resolver a fase 12 do elevador." },
   { id: "hanoi-5", jogo: "hanoi", nome: "Torre de cinco", como: "Montar a torre com 5 discos." },
   { id: "hanoi-7", jogo: "hanoi", nome: "Mestre da torre", como: "Montar a torre com 7 discos." },
@@ -81,7 +82,23 @@ export const JOGOS = [
     objetivo: "Chegue ao andar da bandeirinha usando só os dois botões.",
     direito: "dp", // domínio público: tradição de problemas aritméticos; fases nossas
     interesses: ["planejar", "numeros"],
-    curiosidade: "Os elevadores ficaram seguros para pessoas em 1852, quando o americano Elisha Otis inventou um freio que segura a cabine se o cabo arrebentar.",
+    curiosidade: "Em 1852, o americano Elisha Otis inventou um freio de segurança para elevadores: se o cabo arrebentasse, a cabine ficava presa nos trilhos. Em 1854, ele mostrou o freio funcionando numa grande feira em Nova York.",
+    // História narrada pelo Tomé (texto conferido em fonte em 02/10/2026: Wikipédia "Elisha Otis" e "New York
+    // Crystal Palace", Museu Nacional de Inventores dos EUA, CultureNow). Cortar o cabo foi de propósito, e a
+    // plataforma desceu só alguns centímetros; o texto conta isso sem dramatizar.
+    historia: {
+      anfitriao: "tome", quem: "Tomé, o bisão", titulo: "O elevador que não cai", convite: "A história do Tomé", audio: "jogos/elevador/historia.mp3",
+      paginas: [
+        "Oi! Eu sou o Tomé, um bisão dos Estados Unidos. Eu adoro prédios bem altos e a vista lá de cima.",
+        "Antigamente, subir de andar não era nada fácil. Já existiam elevadores, mas as pessoas tinham medo deles: se o cabo arrebentasse, a cabine podia cair.",
+        "Um inventor chamado Elisha Otis teve uma ideia: um freio de segurança. Se o cabo arrebentasse, o freio prendia a cabine nos trilhos, e ela ficava parada.",
+        "Em mil oitocentos e cinquenta e quatro, numa grande feira em Nova York, ele fez um teste na frente de todo mundo. A plataforma subiu bem alto, o cabo foi cortado de propósito, e o freio funcionou: ela só desceu alguns centímetros e parou.",
+        "Com elevadores mais confiáveis, os prédios puderam crescer cada vez mais para cima.",
+        "Agora é a sua vez de ser o engenheiro. Só há dois botões: um sobe, o outro desce. Pense com calma e leve o elevador até a bandeira.",
+      ],
+    },
+    proximo: "hanoi", proximoConvite: "Quer mover uma torre de discos?",
+    paises: [],
     paises: [],
     segredo: ["Pense ao contrário: de qual andar dá para chegar ao alvo com um só aperto?", "Cada aperto sobe ou desce sempre o mesmo tanto. Então só alguns andares são alcançáveis.", "Se os dois botões andam de números pares (2 e 4, por exemplo), você só visita andares pares. Se o alvo é ímpar, não dá!"],
     treina: "Fazer contas de cabeça e perceber quando algo é impossível.",

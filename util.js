@@ -50,6 +50,13 @@ export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&a
 // Escolha manual da criança nos ajustes (fase, discos, tamanho): vale até ela mudar de novo.
 // Fica por criança, para dois primos no mesmo celular não trocarem a escolha um do outro.
 const chaveEscolha = (ctx, nome) => `escolha:${ctx?.jogadores?.[0]?.id || "visitante"}:${nome}`;
+// Jogos com modelo ilustrado: a escolha da criança vale; sem escolha, ilustrado, menos em celular fraco.
+export const visualIlustrado = (ctx, chave) => (escolhaDaCrianca(ctx, chave) ?? (document.body.classList.contains("leve") ? "leve" : "ilustrado")) === "ilustrado";
+// Baixa as imagens do modelo ilustrado. Resolve false se alguma falhar (sem internet) ou passar de 4 s.
+export function carregarImagens(urls, ms = 4000) {
+  const baixar = (url) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(true); i.onerror = () => ok(false); i.src = url; });
+  return Promise.race([Promise.all(urls.map(baixar)).then((r) => r.every(Boolean)), new Promise((ok) => setTimeout(() => ok(false), ms))]);
+}
 export const escolhaDaCrianca = (ctx, nome) => ler(chaveEscolha(ctx, nome), null);
 export const guardarEscolha = (ctx, nome, valor) => guardar(chaveEscolha(ctx, nome), valor);
 export const esperar = (ms) => new Promise((r) => setTimeout(r, ms));

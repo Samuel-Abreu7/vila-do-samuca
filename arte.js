@@ -162,6 +162,14 @@ DESENHOS["cordeiro-preocupado"] = DESENHOS.cordeiro + sobrancelhas(43, 8, "#f6e7
 DESENHOS["couve-feliz"] = DESENHOS.couve.replace(/<path d="M46 72 h8"[^>]*\/>/, "") + sorriso(70, 6) + bochechas(68);
 DESENHOS["couve-preocupada"] = DESENHOS.couve.replace(/<path d="M46 72 h8"[^>]*\/>/, "") + sobrancelhas(51, 11) + bocaO(50, 74, "#1b1f3a");
 DESENHOS["barqueiro-feliz"] = DESENHOS.barqueiro + `<path d="M74 74 Q84 64 88 50" stroke="#3a6fd1" stroke-width="9" fill="none" stroke-linecap="round"/><circle cx="88" cy="46" r="6.5" fill="#f2c29a"/>`;
+// Tomé, o bisão: anfitrião dos Estados Unidos (a história do elevador). Gentil, de juba felpuda; sem
+// chapéu nem roupa de vaqueiro, para não cair em estereótipo.
+DESENHOS.tome = `${sombra}
+    <ellipse cx="50" cy="78" rx="30" ry="17" fill="#6b3f1c"/>
+    <path d="M24 32 Q12 22 22 16 Q27 24 33 30 Z M76 32 Q88 22 78 16 Q73 24 67 30 Z" fill="#f0dcae" stroke="#b08850" stroke-width="2"/>
+    <circle cx="50" cy="46" r="33" fill="#5a3216"/><circle cx="30" cy="40" r="9" fill="#6b3f1c"/><circle cx="70" cy="40" r="9" fill="#6b3f1c"/><circle cx="50" cy="22" r="10" fill="#6b3f1c"/>
+    <ellipse cx="50" cy="54" rx="22" ry="21" fill="#9a6232"/><ellipse cx="50" cy="64" rx="12" ry="9" fill="#e9c58f"/>
+    ${olhos(50, 10, 5)}<ellipse cx="50" cy="61" rx="4.5" ry="3" fill="#2a1f1c"/>${sorriso(69, 5)}`;
 // Bento, o texugo: anfitrião do Reino Unido (Alcuíno era de York). Calmo e curioso, gosta de
 // mapas antigos. Sem chapéu-coco, chá ou outro estereótipo de país.
 DESENHOS.bento = `${sombra}
@@ -190,7 +198,7 @@ export const NOME_DESENHO = {
   leao: "Leão", tigre: "Tigre", panda: "Panda", sapo: "Sapo", polvo: "Polvo", unicornio: "Unicórnio", dragao: "Dragão", dino: "Dinossauro",
   golfinho: "Golfinho", tubarao: "Tubarão", abelha: "Abelha", borboleta: "Borboleta", foguete: "Foguete", bola: "Bola", violao: "Violão", cacto: "Cacto",
   cachorro: "Cachorro", gato: "Gato", maca: "Maçã", banana: "Banana", estrela: "Estrela", lua: "Lua", carro: "Carro", balao: "Balão",
-  bento: "Bento, o texugo", flor: "Flor", gota: "Gota", bandeira: "Bandeira", trofeu: "Troféu", samuca: "Samuca", lupa: "Lupa", chave: "Chave", cofre: "Cofre", uva: "Uva", laranja: "Laranja", morango: "Morango", pera: "Pera",
+  bento: "Bento, o texugo", tome: "Tomé, o bisão", flor: "Flor", gota: "Gota", bandeira: "Bandeira", trofeu: "Troféu", samuca: "Samuca", lupa: "Lupa", chave: "Chave", cofre: "Cofre", uva: "Uva", laranja: "Laranja", morango: "Morango", pera: "Pera",
 };
 export const nomeDoAvatar = (valor) => NOME_DESENHO[AVATAR_DE[valor]] || "Personagem";
 // Valor desconhecido (por exemplo, de uma cópia de segurança editada) entra escapado.

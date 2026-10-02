@@ -87,3 +87,28 @@
 .el-tecla.sem-andar small { font-size: .68rem; }
 .el-fases button.sugerida { box-shadow: 0 3px 0 var(--sombra), 0 0 0 3px var(--ouro); }
 .el-fase-atual:empty { display: none; }
+
+/* ---------- Modelo ilustrado (02/10/2026) ----------
+   Cenário pintado de fundo; cabine com a raposa passageira, janelas, porta e bandeira em sprites (atlas
+   recortado por `spr`). O prédio continua desenhado em CSS, porque o número de andares muda de fase para fase.
+   Tudo parado até a criança tocar. */
+.spr { display: inline-block; flex: none; background: url("img/atlas.webp") no-repeat; }
+.el-cena { position: relative; }
+.el-cena.ilustrado { background: #6ac9fb url("img/cenario.webp") center bottom / cover no-repeat; padding-bottom: 44px; }
+.el-cena.carregando { opacity: 0; }
+.el-tome { position: absolute; right: 8px; top: 8px; z-index: 5; width: 64px; height: 64px; padding: 2px; border: 0; border-radius: 16px; cursor: pointer;
+  display: grid; place-items: center; background: rgba(255,255,255,.55); }
+.el-tome:focus-visible { outline: 3px solid var(--ouro); outline-offset: 2px; }
+.el-tome:active { translate: 0 2px; }
+.el-cena.ilustrado .el-predio li { grid-template-columns: 3.3em calc(62px * var(--e, 1)) minmax(0, 1fr) 34px; min-height: var(--ah, 52px); }
+.el-cena.ilustrado .el-predio .janelas { gap: 2px; padding: 0 2px; }
+.el-cena.ilustrado .el-predio .janelas .spr { margin: 0 auto; align-self: center; }
+.el-cena.ilustrado .el-predio li.aqui .janelas { box-shadow: none; }
+.el-cena.ilustrado .el-predio .poco { overflow: visible; }
+/* A cabine é mais alta que um andar: sobra para cima, sobre o poço escuro */
+.el-cena.ilustrado .cabine-peca { position: relative; align-self: end; margin-bottom: 1px; }
+.el-cena.ilustrado .cabine-peca .spr { display: block; filter: drop-shadow(0 2px 0 rgba(0,0,0,.25)); }
+.el-cena.ilustrado .el-predio li.alvo .poco { box-shadow: inset 2px 0 0 #2e1a0b, inset -2px 0 0 #2e1a0b; }
+.el-cena.ilustrado .bandeira .spr { display: block; }
+.el-dica-visual { margin: 8px 0 12px; color: var(--apagado); font-size: .9rem; }
+.el-rota .spr, .el-rota-alvo .spr { vertical-align: middle; }

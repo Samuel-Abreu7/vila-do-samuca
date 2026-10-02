@@ -1,6 +1,6 @@
 // Elevador de botões: só dois botões (sobe X, desce Y). Chegue ao andar pedido.
 // Algumas fases são impossíveis de propósito; a criança pode dizer "não dá".
-import { carregarEstilo, ler, escolhaDaCrianca, guardarEscolha, faixa, som, festa, prepararJogo, posicoes, mover, dicasEmDegraus, repetir } from "../../util.js";
+import { carregarEstilo, ler, escolhaDaCrianca, guardarEscolha, escolhas, visualIlustrado, carregarImagens, faixa, som, festa, prepararJogo, posicoes, mover, dicasEmDegraus, repetir } from "../../util.js";
 import { arte, icone } from "../../arte.js";
 
 const FASES = [
@@ -70,6 +70,19 @@ const CABINE = `<svg viewBox="0 0 44 36" width="44" height="36" aria-hidden="tru
   <path d="M10 12 L14 12 M26 12 L30 12" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".7"/>
   <circle cx="22" cy="6" r="2" fill="#ffd23d" stroke="#6b4a1a" stroke-width="1"/></svg>`;
 
+// ---------- Modelo ilustrado (imagens geradas por IA, assinadas pela vila) ----------
+// Duas versões à escolha: a ilustrada (cenário pintado e um atlas com a cabine, a raposa passageira, janelas,
+// porta e bandeira) e a leve (desenhos em código, sem internet e em celular fraco). O atlas guarda o retângulo
+// exato de cada figura [x, y, largura, altura]; `spr` recorta por ele na escala pedida (px por px do atlas).
+// Sem internet (ou imagem lenta), o jogo cai sozinho no modelo leve.
+const IMG = { cenario: new URL("./img/cenario.webp", import.meta.url).href, atlas: new URL("./img/atlas.webp", import.meta.url).href };
+const ATLAS = { w: 864, h: 432 };
+const RET = {"cabine": [33, 4, 149, 208], "cabine-feliz": [255, 4, 137, 196], "cabine-preocupada": [471, 4, 138, 202], "tome": [697, 16, 118, 183], "janela": [50, 249, 116, 150], "janela-acesa": [269, 239, 109, 170], "bandeira": [489, 252, 101, 144], "porta": [691, 234, 133, 180]};
+const spr = (nome, k) => {
+  const [x, y, w, h] = RET[nome];
+  return `<span class="spr" style="width:${(w * k).toFixed(1)}px;height:${(h * k).toFixed(1)}px;background-size:${(ATLAS.w * k).toFixed(1)}px ${(ATLAS.h * k).toFixed(1)}px;background-position:${(-x * k).toFixed(1)}px ${(-y * k).toFixed(1)}px" aria-hidden="true"></span>`;
+};
+
 // Dificuldade de cada fase na mesma escala do nível das crianças.
 export const dificuldade = (f) => { const m = menorCaminho(f); return m === null ? 1150 : 600 + 65 * m; };
 
@@ -82,13 +95,23 @@ export function montar(palco, ctx) {
   const escolhida = guiada ? null : escolhaDaCrianca(ctx, "elevador:fase");
   let fase = guiada ? 0 : escolhida !== null ? Math.min(escolhida, FASES.length - 1) : sugerida >= 0 ? sugerida : 0;
   let andar, apertos, fim, historico, vivo = true, repetindo = false;
+  let ilustrado = visualIlustrado(ctx, "elevador:visual");
+  // Passageira (a raposa): contente, feliz ao chegar, preocupada (nunca com medo) quando a criança aperta
+  // "Não dá!" numa fase que tem jeito, ou se ficar sem saída. Volta a ficar contente no próximo toque.
+  let duvida = false;
+  const preso = () => !fim && !repetindo && caminho(f(), andar) === null && caminho(f(), f().inicio) !== null;
+  const humor = () => (andar === f().alvo ? "feliz" : duvida || preso() ? "preocupada" : "contente");
+  const NOME_CABINE = { contente: "cabine", feliz: "cabine-feliz", preocupada: "cabine-preocupada" };
+  const bandeira = (tamLeve, kIlu) => (ilustrado ? spr("bandeira", kIlu) : arte("bandeira", tamLeve));
+  const botaoTome = () => (ilustrado ? spr("tome", 0.3) : arte("tome", 46));
 
   palco.innerHTML = `
     <section class="jg el">
       ${faixa(arte("elevador", 54), "Elevador de botões", { ajustes: !guiada })}
       <p class="el-fase-atual" id="el-fase-atual"></p>
       <p class="el-rota" id="el-rota"></p>
-      <div class="el-cena">
+      <div class="el-cena${ilustrado ? " ilustrado carregando" : ""}">
+        <button type="button" class="el-tome" aria-label="Tomé, o bisão. Toque para ouvir a história do jogo.">${botaoTome()}</button>
         <div class="el-corpo">
           <div class="el-predio-moldura"><ol class="el-predio" id="el-predio" aria-label="Prédio"></ol></div>
           <div class="el-painel">
@@ -110,7 +133,13 @@ export function montar(palco, ctx) {
     </section>`;
 
   const ajustes = document.createElement("div");
-  ajustes.innerHTML = `<span class="rotulo">Escolher fase</span><div id="el-fases" class="escolhas el-fases" data-nova-partida></div>`;
+  ajustes.innerHTML = `<span class="rotulo">Visual do jogo</span><div id="el-visual" class="escolhas" data-nova-partida></div>
+    <p class="el-dica-visual">O ilustrado tem desenhos mais ricos e precisa de internet. O leve funciona sem internet e em celular mais simples.</p>
+    <span class="rotulo">Escolher fase</span><div id="el-fases" class="escolhas el-fases" data-nova-partida></div>`;
+  escolhas(ajustes.querySelector("#el-visual"), [["ilustrado", "Ilustrado"], ["leve", "Leve"]], ilustrado ? "ilustrado" : "leve", (v) => {
+    guardarEscolha(ctx, "elevador:visual", v);
+    ctx?.reiniciar?.();
+  });
   const jogo = prepararJogo(palco, {
     ctx, ajustes: guiada ? null : ajustes, tutorial: true,
     regras: `<ul>
@@ -180,7 +209,7 @@ export function montar(palco, ctx) {
     fase = n;
     // Quem escolheu a fase segue dali (inclusive com "Próxima fase"); quem não escolheu segue o nível.
     if (!guiada && escolhaDaCrianca(ctx, "elevador:fase") !== null) guardarEscolha(ctx, "elevador:fase", fase);
-    andar = f().inicio; apertos = 0; fim = false; historico = [];
+    andar = f().inicio; apertos = 0; fim = false; historico = []; duvida = false;
     aviso.textContent = ""; aviso.className = "aviso";
     $("#el-proxima").hidden = true;
     $("#el-fase-atual").textContent = guiada ? "" : `Fase ${fase + 1} de ${FASES.length}`; // na fase guiada, a barra do app já mostra o progresso
@@ -191,20 +220,26 @@ export function montar(palco, ctx) {
 
   function desenhar() {
     const fa = f();
+    // Prédios mais altos têm andares mais baixos no modelo ilustrado, para a cabine e a bandeira caberem juntas na tela.
+    const ah = fa.topo <= 9 ? 52 : fa.topo <= 12 ? 46 : 40, e = ah / 52;
+    $("#el-predio").style.setProperty("--ah", `${ah}px`);
+    $("#el-predio").style.setProperty("--e", String(e));
     const linhas = [];
     for (let n = fa.topo; n >= 0; n--) {
-      const estado = [n === andar && "o elevador está aqui", n === fa.alvo && "andar da bandeira"].filter(Boolean).join(", ");
+      const estado = [n === andar && `o elevador está aqui, com a raposa ${humor()}${humor() === "preocupada" ? (preso() ? " (sem saída: toque em Desfazer)" : " (tem jeito, sim: continue tentando)") : ""}`, n === fa.alvo && "andar da bandeira"].filter(Boolean).join(", ");
       linhas.push(`<li data-n="${n}" class="${n === andar ? "aqui" : ""} ${n === fa.alvo ? "alvo" : ""} ${n === 0 ? "terreo" : ""}">
         <span class="num">${nomeAndar(n)}</span>
-        <span class="poco">${n === andar ? `<span class="cabine-peca" data-peca="cabine">${CABINE}</span>` : ""}</span>
-        <span class="janelas" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span class="bandeira">${n === fa.alvo ? arte("bandeira", 26) : ""}</span>
+        <span class="poco">${n === andar ? `<span class="cabine-peca" data-peca="cabine">${ilustrado ? spr(NOME_CABINE[humor()], 0.32 * e) : CABINE}</span>` : ""}</span>
+        <span class="janelas" aria-hidden="true">${ilustrado
+          ? [0, 1, 2].map((k) => (n === 0 && k === 1 ? spr("porta", 0.19 * e) : spr(n === andar ? "janela-acesa" : "janela", 0.165 * e))).join("")
+          : "<i></i><i></i><i></i>"}</span>
+        <span class="bandeira">${n === fa.alvo ? bandeira(26, 0.2 * e) : ""}</span>
         ${estado ? `<span class="so-leitor">: ${estado}</span>` : ""}</li>`);
     }
     $("#el-predio").innerHTML = linhas.join("");
     $("#el-rota").innerHTML = andar === fa.alvo
-      ? `${arte("bandeira", 22)} Chegou ${aoAndar(fa.alvo)}!`
-      : `<span>Está ${noAndar(andar)}</span> <span class="el-rota-alvo">${arte("bandeira", 22)} Chegar ${aoAndar(fa.alvo)}</span>`;
+      ? `${bandeira(22, 0.16)} Chegou ${aoAndar(fa.alvo)}!`
+      : `<span>Está ${noAndar(andar)}</span> <span class="el-rota-alvo">${bandeira(22, 0.16)} Chegar ${aoAndar(fa.alvo)}</span>`;
     $("#el-visor").textContent = nomeAndar(andar);
     const sobe = $("#el-sobe"), desce = $("#el-desce");
     const semCima = andar + fa.sobe > fa.topo, semBaixo = andar - fa.desce < 0;
@@ -218,6 +253,8 @@ export function montar(palco, ctx) {
     desce.disabled = fim || repetindo || semBaixo;
     $("#el-naoda").disabled = fim || repetindo;
     $("#el-desfazer").disabled = fim || repetindo || !historico.length;
+    // Sem saída: o Desfazer ganha destaque (é o caminho de volta, sem bronca).
+    $("#el-desfazer").classList.toggle("dourado", preso());
     $("#el-recomecar").disabled = repetindo;
     const botaoAjustes = palco.querySelector('[data-faixa="ajustes"]');
     if (botaoAjustes) botaoAjustes.disabled = repetindo; // trocar o desafio no meio da repetição misturaria tudo
@@ -235,6 +272,7 @@ export function montar(palco, ctx) {
         menorCaminho(f()) === null ? `Descobriu que a fase ${fase + 1} era impossível e explicou com o "Não dá!".` : `Levou o elevador ${f().alvo === 0 ? "ao térreo" : `ao ${nomeAndar(f().alvo)} andar`} com ${apertos} apertos (fase ${fase + 1}).`);
       ctx?.fala("resolveu");
       if (!guiada && menorCaminho(f()) === null) ctx?.conquistar?.("elevador-impossivel");
+      if (!guiada && perfeito && dicas.usados === 0 && menorCaminho(f()) !== null) ctx?.conquistar?.("elevador-direto");
       if (!guiada && fase === FASES.length - 1) ctx?.conquistar?.("elevador-topo");
     }
     som(certo ? "vitoria" : "erro");
@@ -262,6 +300,7 @@ export function montar(palco, ctx) {
 
   function apertar(delta) {
     if (fim) return;
+    duvida = false;
     const antes = posicoes($("#el-predio"), "[data-peca]");
     historico.push(andar);
     andar += delta; apertos += 1;
@@ -271,9 +310,13 @@ export function montar(palco, ctx) {
         ? `Chegou com ${apertos} apertos. Impossível fazer com menos!`
         : `Chegou com ${apertos} apertos. Dá para chegar com ${minimo}. Quer tentar de novo?`, true, apertos === minimo, apertos === minimo ? 1 : 0.6);
     } else {
-      som("toque");
+      som("nota", andar);
       aviso.textContent = ""; aviso.className = "aviso";
       desenhar();
+      if (preso()) {
+        aviso.textContent = "Hmm, daqui não dá para chegar ao andar da bandeira. Tudo bem: errar faz parte de pensar. Toque em Desfazer e o elevador volta.";
+        aviso.className = "aviso erro";
+      }
     }
     mover($("#el-predio"), "[data-peca]", antes, { duracao: 500 });
     dicas.zerar();
@@ -284,9 +327,12 @@ export function montar(palco, ctx) {
   $("#el-recomecar").addEventListener("click", () => { iniciar(fase); dicas.zerar(); });
   $("#el-desfazer").addEventListener("click", () => {
     if (fim || !historico.length) return;
+    duvida = false;
+    const antes = posicoes($("#el-predio"), "[data-peca]");
     andar = historico.pop(); apertos -= 1; som("solta");
     aviso.textContent = ""; aviso.className = "aviso";
     desenhar(); dicas.zerar();
+    mover($("#el-predio"), "[data-peca]", antes, { duracao: 500 });
   });
   $("#el-proxima").addEventListener("click", () => { iniciar(fase + 1); dicas.zerar(); });
   ajustes.querySelector("#el-fases").addEventListener("click", (e) => {
@@ -296,9 +342,27 @@ export function montar(palco, ctx) {
   $("#el-naoda").addEventListener("click", () => {
     const minimo = menorCaminho(f());
     if (minimo === null) terminar("Isso mesmo: nesta fase não tem jeito de chegar lá. Consegue explicar por quê?", true, true);
-    else { som("erro"); aviso.textContent = "Tem jeito, sim! Continue tentando."; aviso.className = "aviso erro"; }
+    else {
+      som("erro"); duvida = true; desenhar();
+      aviso.textContent = "Tem jeito, sim! Tudo bem errar: continue tentando."; aviso.className = "aviso erro";
+    }
   });
 
+  $(".el-tome").hidden = !ctx?.historia;
+  $(".el-tome").addEventListener("click", () => { som("nota", 1); jogo.abrirHistoria(); });
+  if (ilustrado) {
+    carregarImagens([IMG.cenario, IMG.atlas]).then((ok) => {
+      if (!vivo) return;
+      if (!ok) {
+        // Sem internet (ou lenta): volta sozinho ao modelo leve, sem avisar nem travar.
+        ilustrado = false;
+        $(".el-cena").classList.remove("ilustrado");
+        $(".el-tome").innerHTML = botaoTome();
+        desenhar();
+      }
+      $(".el-cena").classList.remove("carregando");
+    });
+  }
   iniciar(fase);
   setTimeout(() => {
     if (guiada === 3) ctx?.dizer?.("Agora tente sozinho. Desconfie: será que dá para chegar lá?");
