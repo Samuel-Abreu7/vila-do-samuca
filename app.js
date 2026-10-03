@@ -161,7 +161,8 @@ function telaEntrar() {
       <a class="botao principal" href="#/novo">+ Novo jogador</a>
       <button type="button" class="botao" id="visitante">Visitante</button>
     </div>
-    <p class="rodape"><a href="#/painel">Painel da família</a> · <a href="#/cuidados">Para pais e avós</a></p>`;
+    <p class="rodape"><a href="#/painel">Painel da família</a> · <a href="#/cuidados">Para pais e avós</a> ·
+      <a class="rodape-loja" href="#/lojinha" aria-label="Lojinha da Vila, só para adultos">${icone("loja", 18)} Lojinha</a></p>`;
   palco.querySelector("#entrar-dica").append(botaoOuvir(() => "Quem vai jogar? Toque no seu personagem.", "Ouvir"));
   const caixa = palco.querySelector("#lista");
   if (!lista.length) caixa.innerHTML = `<p class="vazio">Ainda não tem ninguém aqui. Crie o primeiro jogador!</p>`;
@@ -412,7 +413,8 @@ function inicio() {
 // regra, mudar aqui também.
 const CUIDADOS = [
   { icone: "casa", titulo: "Feito para pensar, não para prender", itens: [
-    "Sem anúncios, sem compras e sem pedir dinheiro. É um projeto da família, sem fins lucrativos.",
+    "Quem joga nunca paga nada. Os jogos não têm anúncios, não têm compras e não pedem dinheiro, e nada é vendido para as crianças.",
+    "Para ajudar a pagar o portal existe uma página separada, só para adultos, a Lojinha da Vila, protegida pela senha da família. Ela nunca aparece dentro de um jogo, no mapa ou para uma criança, e hoje ainda não tem nenhum produto nem link.",
     "Sem moedas, baús, prêmios sorteados ou sequência de dias seguidos. Nada que faça a criança voltar por obrigação.",
     "Sem notificações. O portal nunca chama a criança.",
     "Sem ranking e sem comparar uma criança com outra: o nível de cada um nunca aparece na tela.",
@@ -494,6 +496,45 @@ function telaCuidados() {
     </section>`;
   const intro = palco.querySelector(".cuidados-intro");
   intro.append(botaoOuvir(() => palco.querySelector(".cuidados").innerText.replace(/Voltar para a vila/g, ""), "Ouvir a página"));
+}
+
+// ---------------------------------------------------------------- Lojinha da Vila (só para adultos)
+// Regra do dono (02/10/2026): o portal nunca cobra acesso nem vende nada a quem joga. A lojinha é uma página
+// separada, para adultos, atrás da senha da família; nunca aparece dentro de um jogo, no mapa nem no fim de partida.
+// Hoje ela só explica as regras: não há produtos, links de afiliado, anúncios de terceiros nem coleta de dados.
+function telaLojinha() {
+  palco.innerHTML = `
+    <section class="jg cuidados">
+      <div class="faixa" style="--cor-jogo:var(--ouro);--cor-jogo-escura:#8a5a00;--cor-jogo-profunda:#5e3d00">
+        <span class="emblema">${icone("loja", 34)}</span><h1>Lojinha da Vila</h1></div>
+      <div id="lojinha-area"></div>
+    </section>`;
+  const area = palco.querySelector("#lojinha-area");
+  const conteudo = () => {
+    area.innerHTML = `
+      <p class="cuidados-intro">Esta página é para adultos: pais, avós e professores. Os jogos nunca vendem nada, e quem joga nunca paga nada.</p>
+      <section class="cuidados-bloco"><h2>${icone("loja", 24)} Situação de hoje</h2><ul>
+        <li><b>A lojinha ainda não abriu.</b> Não há produtos, nem links de lojas, nem anúncios.</li>
+        <li>Esta página não coleta nenhum dado e não carrega nada de outros sites.</li></ul></section>
+      <section class="cuidados-bloco"><h2>As regras da lojinha</h2><ul>
+        <li>Ela nunca aparece dentro de um jogo, no mapa da vila, no fim de uma partida ou para uma criança. Só existe aqui, atrás da senha da família.</li>
+        <li>Os produtos são para adultos. Nada de produto para criança dentro do portal.</li>
+        <li>Terá só links de lojas parceiras. A compra é feita no site da loja: o portal não recebe pagamento nem guarda dado de compra.</li>
+        <li>Cada link dirá com clareza que o portal recebe uma comissão por indicação, sem nenhum custo a mais para quem compra.</li></ul></section>
+      <section class="cuidados-bloco"><h2>Para onde iria o dinheiro (ainda a combinar)</h2><ul>
+        <li>A ideia é cobrir primeiro os custos do portal e da própria lojinha.</li>
+        <li>O que sobrar seria usado em benefício dos alunos da Escola Municipal Dr. José de Abreu Santos, em itens indicados pelo corpo docente.</li>
+        <li><b>Isso ainda é uma intenção:</b> falta combinar com a escola e a prefeitura, e só será dito como certo aqui depois de combinado.</li></ul></section>
+      <a class="botao" href="#/">Voltar para a vila</a>`;
+    area.querySelector(".cuidados-intro").append(botaoOuvir(() => area.innerText.replace(/Voltar para a vila/g, ""), "Ouvir a página"));
+  };
+  if (!P.temPainel()) {
+    area.innerHTML = `<p class="cuidados-texto">Esta página é para adultos. Crie primeiro a senha da família no <a href="#/painel">Painel da família</a>.</p>
+      <a class="botao" href="#/">Voltar para a vila</a>`;
+    return;
+  }
+  // Adulto: a página só abre com a senha da família (a mesma do painel).
+  pedirSenhaFamilia(area, "Página para adultos. Digite a senha da família.").then((ok) => { if (ok && location.hash.startsWith("#/lojinha")) conteudo(); });
 }
 
 // ---------------------------------------------------------------- Diário de bordo e estante
@@ -1074,6 +1115,7 @@ function rota() {
     mostrarQuem();
     if (h.startsWith("#/painel")) return telaPainel();
     if (h.startsWith("#/cuidados")) return telaCuidados();
+    if (h.startsWith("#/lojinha")) return telaLojinha();
     if (h.startsWith("#/novo")) return novoLiberado ? telaNovo() : telaSenhaNovo();
     if (!jogadorAtivo()) { voltar.hidden = true; return telaEntrar(); }
     if (h.startsWith("#/dormindo") || esgotado(P.ativaId())) { voltar.hidden = true; return telaDormindo(); }

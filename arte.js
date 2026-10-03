@@ -237,6 +237,7 @@ export const avatar = (valor, tam = 48) => AVATAR_DE[valor] ? arte(AVATAR_DE[val
 
 // ---------- Ícones de interface (traço branco) ----------
 const ICONES = {
+  loja: `<path d="M5 11v9h14v-9" fill="none"/><path d="M3.5 4h17l1 5a3 3 0 0 1-5.7 1.3 3 3 0 0 1-5.6 0A3 3 0 0 1 2.5 9Z" fill="none"/><path d="M10 20v-5h4v5" fill="none"/>`,
   som: `<path d="M4 9v6h4l5 4V5L8 9Z"/><path d="M16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14" fill="none"/>`,
   mudo: `<path d="M4 9v6h4l5 4V5L8 9Z"/><path d="M17 9l5 6M22 9l-5 6" fill="none"/>`,
   musica: `<path d="M9 18V5l11-2v13" fill="none"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>`,
