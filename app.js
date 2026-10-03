@@ -620,7 +620,7 @@ function telaCuidados() {
 // PRÓPRIO PARA ADULTOS (pasta lojinha-site/ da oficina), separado do portal, porque os programas de afiliados recusam
 // sites direcionados a menores. Aqui, só com um adulto logado, fica uma porta: o texto e um botão para esse site.
 // NENHUM link de afiliado, imagem de produto ou script de loja entra no portal das crianças.
-const LOJINHA_URL = null; // endereço https do site da lojinha, quando ele estiver no ar
+const LOJINHA_URL = "https://samuel-abreu7.github.io/lojinha-da-vila/"; // fase de teste (03/10/2026); depois, domínio da PJ
 async function telaLojinha() {
   palco.innerHTML = `
     <section class="jg cuidados">
