@@ -771,10 +771,3 @@ body.vila-calma .mapa-selo { background: #f3dfa2; }
 
 /* ---------- Lojinha da Vila (só para adultos) ---------- */
 .painel-loja { display: flex; text-decoration: none; margin-bottom: 12px; }
-.loja-grade { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-.loja-item { display: grid; gap: 8px; padding: 12px; border-radius: 18px; background: var(--cartao); box-shadow: 0 5px 0 var(--sombra); }
-.loja-midia { display: block; border-radius: 12px; overflow: hidden; background: #fff; }
-.loja-midia img, .loja-midia video { display: block; width: 100%; height: auto; }
-.loja-nome { margin: 0; font: 400 1.05rem var(--titulo); }
-.loja-aviso { margin: 0; color: var(--apagado); font-size: .85rem; line-height: 1.4; }
-.loja-aviso b { color: var(--ouro); }

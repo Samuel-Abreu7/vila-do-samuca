@@ -1,13 +1,12 @@
 // Guarda o portal inteiro no aparelho para funcionar sem internet.
 // Jogo novo: acrescente os arquivos dele em ARQUIVOS e suba a versão abaixo.
-const CACHE = "enigmas-v59";
+const CACHE = "enigmas-v60";
 const ARQUIVOS = [
   "./",
   "./index.html",
   "./app.css",
   "./app.js",
   "./catalogo.js",
-  "./lojinha-itens.js",
   "./depoimentos.js",
   "./manifest.webmanifest",
   "./icones/icone.svg",

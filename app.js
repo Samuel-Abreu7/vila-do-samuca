@@ -425,7 +425,7 @@ function inicio() {
 const CUIDADOS = [
   { icone: "casa", titulo: "Feito para pensar, não para prender", itens: [
     "Quem joga nunca paga nada. Os jogos não têm anúncios, não têm compras e não pedem dinheiro, e nada é vendido para as crianças.",
-    "Existe uma página só para adultos, a Lojinha da Vila, pensada para ajudar a pagar o portal. Ela só aparece depois que um adulto entra com a senha da família, some quando uma criança escolhe o seu personagem e nunca aparece dentro de um jogo ou no mapa. Hoje ela não tem nenhum produto nem link, e o portal não faz nenhuma venda nem cobrança.",
+    "Para ajudar a pagar o portal, existe a Lojinha da Vila: indicações de produtos para adultos num site separado, para maiores de 18 anos. Na Vila não há produto, link de loja nem propaganda; só um botão para esse site, que aparece depois que um adulto entra com a senha da família e some quando uma criança escolhe o seu personagem. Hoje a lojinha ainda não abriu, e nem a Vila nem a lojinha fazem venda ou cobrança.",
     "Sem moedas, baús, prêmios sorteados ou sequência de dias seguidos. Nada que faça a criança voltar por obrigação.",
     "Sem notificações. O portal nunca chama a criança.",
     "Sem ranking e sem comparar uma criança com outra: o nível de cada um nunca aparece na tela.",
@@ -616,10 +616,11 @@ function telaCuidados() {
 }
 
 // ---------------------------------------------------------------- Lojinha da Vila (só para adultos)
-// Regras do dono (02/10/2026): o portal nunca cobra acesso nem vende nada a quem joga, e não faz nenhuma transação
-// financeira. A lojinha só existe com um adulto logado (senha da família, ver "Adulto logado"), mostra imagem ou
-// vídeo de promoção, e quem toca é levado para fora, ao site da loja parceira, onde compra. Sem script nem imagem de
-// outros sites: as imagens e vídeos são arquivos do próprio portal. Os itens ficam em `lojinha-itens.js` (hoje vazio).
+// Regras do dono (02 e 03/10/2026): o portal nunca cobra acesso nem vende nada a quem joga. A vitrine mora num SITE
+// PRÓPRIO PARA ADULTOS (pasta lojinha-site/ da oficina), separado do portal, porque os programas de afiliados recusam
+// sites direcionados a menores. Aqui, só com um adulto logado, fica uma porta: o texto e um botão para esse site.
+// NENHUM link de afiliado, imagem de produto ou script de loja entra no portal das crianças.
+const LOJINHA_URL = null; // endereço https do site da lojinha, quando ele estiver no ar
 async function telaLojinha() {
   palco.innerHTML = `
     <section class="jg cuidados">
@@ -628,37 +629,19 @@ async function telaLojinha() {
       <div id="lojinha-area"></div>
     </section>`;
   const area = palco.querySelector("#lojinha-area");
-  const conteudo = async () => {
+  const conteudo = () => {
     liberarAdulto();
-    let itens = [], operadora = null;
-    try { ({ ITENS: itens, OPERADORA: operadora } = await import("./lojinha-itens.js")); } catch {}
-    if (!location.hash.startsWith("#/lojinha")) return;
-    const seguro = (u) => typeof u === "string" && /^https:\/\//.test(u);
-    const vitrine = itens.filter((it) => seguro(it.link)).map((it) => `
-      <article class="loja-item">
-        <a class="loja-midia" href="${esc(it.link)}" target="_blank" rel="sponsored noopener noreferrer" aria-label="${esc(it.titulo)}, em ${esc(it.loja)} (abre o site da loja)">
-          ${it.video ? `<video src="${esc(it.video)}" poster="${esc(it.imagem || "")}" preload="none" muted playsinline aria-label="${esc(it.alt || it.titulo)}"></video>`
-            : `<img src="${esc(it.imagem)}" alt="${esc(it.alt || it.titulo)}" loading="lazy" referrerpolicy="no-referrer">`}</a>
-        <p class="loja-nome">${esc(it.titulo)}</p>
-        <p class="loja-aviso"><b>Publicidade.</b> Recebemos uma comissão se você comprar, sem custo a mais para você. A compra é feita no site de ${esc(it.loja)}, fora da Vila.</p>
-        <a class="botao dourado" href="${esc(it.link)}" target="_blank" rel="sponsored noopener noreferrer">Ver em ${esc(it.loja)}</a>
-      </article>`).join("");
+    const aberta = typeof LOJINHA_URL === "string" && /^https:\/\//.test(LOJINHA_URL);
     area.innerHTML = `
-      <p class="cuidados-intro">Esta página é para adultos: pais, avós e professores. Os jogos nunca vendem nada, e quem joga nunca paga nada.</p>
-      ${vitrine ? `<div class="loja-grade">${vitrine}</div>` : `<section class="cuidados-bloco"><h2>${icone("loja", 24)} Situação de hoje</h2><ul>
-        <li><b>A lojinha ainda não abriu.</b> Não há promoções, nem links de lojas.</li>
-        <li>Esta página não coleta nenhum dado e não carrega nada de outros sites.</li></ul></section>`}
+      <p class="cuidados-intro">Esta página é para adultos. A lojinha fica num site separado, só para adultos, fora da Vila: aqui não há produto, link de loja nem propaganda.</p>
+      ${aberta ? `<a class="botao dourado" href="${esc(LOJINHA_URL)}" target="_blank" rel="noopener noreferrer">${icone("loja", 24)} Abrir a Lojinha (site para adultos)</a>`
+        : `<section class="cuidados-bloco"><h2>${icone("loja", 24)} Situação de hoje</h2><ul><li><b>A lojinha ainda não abriu.</b> O site dela ainda não está no ar.</li></ul></section>`}
       <section class="cuidados-bloco"><h2>Como a lojinha funciona</h2><ul>
-        <li>Ela só aparece quando um adulto entra com a senha da família. Some em 5 minutos, quando uma criança escolhe o seu personagem e quando o app vai para o segundo plano.</li>
-        <li>Nunca aparece dentro de um jogo, no mapa da vila, no fim de uma partida ou para uma criança.</li>
-        <li>O portal não faz nenhuma venda nem pagamento. Mostra uma imagem ou um vídeo de promoção; se um adulto tocar, vai para o site da loja parceira, fora da Vila, e compra lá.</li>
-        <li>Cada promoção avisa que o portal recebe uma comissão por indicação, sem custo a mais para quem compra.</li>
-        <li>Os produtos são para adultos. Nada dirigido a criança.</li>
-        <li>${operadora ? `Operada por ${esc(operadora.nome)}, CNPJ ${esc(operadora.cnpj)}.` : "A pessoa jurídica que opera a lojinha será informada aqui antes da abertura."}</li></ul></section>
-      <section class="cuidados-bloco"><h2>Para onde vai o dinheiro</h2><ul>
-        <li>A ideia é cobrir primeiro os custos do portal e da própria lojinha.</li>
-        <li>O que sobrar seria usado em benefício dos alunos da Escola Municipal Dr. José de Abreu Santos, em itens indicados pelo corpo docente.</li>
-        <li><b>Isso ainda é uma intenção:</b> falta combinar com a escola e a prefeitura, e só será dito como certo aqui depois de combinado.</li></ul></section>
+        <li>A porta para a lojinha só aparece quando um adulto entra com a senha da família. Some em 5 minutos, quando uma criança escolhe o seu personagem e quando o app vai para o segundo plano.</li>
+        <li>As indicações ficam num site separado, para maiores de 18 anos, que não tem jogo, personagem nem nada feito para crianças.</li>
+        <li>Nem a Vila nem o site da lojinha vendem ou recebem pagamento: quem compra, compra no site da loja parceira.</li>
+        <li>Cada indicação avisa que é publicidade e que há uma comissão por indicação, sem custo a mais para quem compra.</li>
+        <li>Nenhum dado da Vila vai para o site da lojinha, e ele não tem cadastro nem rastreador.</li></ul></section>
       <div class="acoes"><button type="button" class="botao" id="sair-adulto">Sair do modo adulto</button><a class="botao" href="#/">Voltar para a vila</a></div>`;
     area.querySelector(".cuidados-intro").append(botaoOuvir(() => area.innerText.replace(/Sair do modo adulto|Voltar para a vila/g, ""), "Ouvir a página"));
     area.querySelector("#sair-adulto").addEventListener("click", () => { encerrarAdulto(); location.hash = "#/"; rota(); });
