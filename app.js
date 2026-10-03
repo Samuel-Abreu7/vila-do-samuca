@@ -452,7 +452,7 @@ const CUIDADOS = [
     "Só apelido inventado, personagem desenhado e idade. Nada de nome real, foto ou dado que identifique a criança.",
     "Cada criança entra com um segredo (figuras ou números), guardado embaralhado.",
     "No fim de uma partida, a criança pode, se quiser, tocar numa carinha (gostei, mais ou menos, não gostei) e em como achou a dificuldade. É só escolher, sem escrever nada, e quem vê é só o adulto, no Painel da família. Não muda o nível dela nem dá prêmio.",
-    "Você, adulto, pode mandar a sua própria opinião mais abaixo nesta página. O portal não guarda o que você escreve: você compartilha ou copia o texto e manda para a pessoa da família que cuida do portal.",
+    "Você, adulto, pode mandar a sua própria opinião mais abaixo nesta página: sobre o portal, ou sobre um jogo que você mesmo jogou. O portal não guarda o que você escreve: você compartilha ou copia o texto e manda para a pessoa da família que cuida do portal. Se quiser, pode autorizar a publicação do seu depoimento com nome, idade, cidade e UF; sem a autorização, nada disso é enviado.",
     "Tudo fica guardado só neste celular. Antes de qualquer nuvem, a família faz uma revisão de proteção de dados (LGPD).",
   ] },
   { icone: "dupla", titulo: "Para todas as idades e jeitos de aprender", itens: [
@@ -507,28 +507,57 @@ function resumoOpinioes() {
   };
 }
 function formularioPais() {
-  const jogos = JOGOS.filter((g) => g.pronto);
+  // Só se opina sobre um jogo que se jogou de verdade: a lista traz apenas os jogos terminados neste celular
+  // (`jogou:<jogo>`, gravado ao registrar o resultado) e ainda pede a confirmação de que o adulto mesmo jogou.
+  const jogados = JOGOS.filter((g) => g.pronto && ler(`jogou:${g.id}`, null));
+  const UFS = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
   return `<section class="cuidados-bloco" id="opiniao">
     <h2>Sua opinião, pai, mãe, avó ou avô</h2>
     <p>Conte o que achou: um elogio, um problema, uma ideia. <b>Não escreva nome, foto ou dado de criança.</b>
     O portal não guarda nada do que você escrever: o texto fica só neste aparelho até você compartilhar ou copiar e mandar para a pessoa da família que cuida do portal.</p>
-    <label class="rotulo" for="op-tipo">Sobre o quê?</label>
+    <label class="rotulo" for="op-tipo">Que tipo de mensagem?</label>
     <select id="op-tipo" class="campo"><option>Elogio</option><option>Problema</option><option>Ideia</option><option>Dúvida</option></select>
-    <label class="rotulo" for="op-jogo">Qual jogo? (opcional)</label>
-    <select id="op-jogo" class="campo"><option value="">Todos / a vila em geral</option>${jogos.map((g) => `<option>${g.nome}</option>`).join("")}</select>
+    <label class="rotulo" for="op-jogo">Sobre o quê?</label>
+    <select id="op-jogo" class="campo"><option value="">O portal, a vila em geral</option>${jogados.map((g) => `<option>${esc(g.nome)}</option>`).join("")}</select>
+    <p class="nota">${jogados.length ? "Aparecem aqui só os jogos que foram terminados neste celular." : "Para opinar sobre um jogo, jogue-o até o fim neste celular. Antes disso, a opinião é sobre o portal."}</p>
+    <label class="opiniao-check" id="op-joguei-linha" hidden><input type="checkbox" id="op-joguei"> Eu mesmo joguei este jogo (opinião sobre um jogo só vale de quem jogou).</label>
     <label class="rotulo" for="op-texto">Sua mensagem</label>
     <textarea id="op-texto" class="campo" rows="5" maxlength="1500" placeholder="Escreva aqui"></textarea>
     <label class="opiniao-check"><input type="checkbox" id="op-resumo"> Incluir o resumo do que as crianças deste celular acharam dos jogos (sem nomes)</label>
+    <fieldset class="opiniao-pub"><legend>Depoimento público (opcional)</legend>
+      <label class="opiniao-check"><input type="checkbox" id="op-autoriza"> <span>Autorizo a Vila do Samuca a publicar o meu depoimento, junto com o meu nome, idade, cidade e UF, no site e em materiais de divulgação do portal. Posso pedir a retirada a qualquer momento.</span></label>
+      <div id="op-pub-campos" hidden>
+        <p class="nota">Use os <b>seus</b> dados de adulto, nunca os de uma criança. Sem a autorização acima, nada disto é enviado.</p>
+        <label class="rotulo" for="op-nome">Seu nome</label><input id="op-nome" class="campo" maxlength="60" autocomplete="name">
+        <label class="rotulo" for="op-idade">Sua idade</label><input id="op-idade" class="campo" type="number" inputmode="numeric" min="18" max="120">
+        <label class="rotulo" for="op-cidade">Cidade</label><input id="op-cidade" class="campo" maxlength="60" autocomplete="address-level2">
+        <label class="rotulo" for="op-uf">UF</label>
+        <select id="op-uf" class="campo"><option value="">Escolha</option>${UFS.map((u) => `<option>${u}</option>`).join("")}</select>
+      </div></fieldset>
     <div class="acoes"><button type="button" class="botao principal" id="op-enviar">Compartilhar</button><button type="button" class="botao" id="op-copiar">Copiar</button></div>
     <p class="nota" id="op-msg" role="status"></p></section>`;
 }
 function ligarFormularioPais() {
   const q = (s) => palco.querySelector(s);
+  const erro = (m, alvo) => { q("#op-msg").textContent = m; q(alvo)?.focus(); return null; };
+  q("#op-jogo").addEventListener("change", () => { q("#op-joguei-linha").hidden = !q("#op-jogo").value; });
+  q("#op-autoriza").addEventListener("change", () => { q("#op-pub-campos").hidden = !q("#op-autoriza").checked; });
   const montar = () => {
     const t = q("#op-texto").value.trim();
-    if (!t) { q("#op-msg").textContent = "Escreva a mensagem primeiro."; q("#op-texto").focus(); return null; }
+    if (!t) return erro("Escreva a mensagem primeiro.", "#op-texto");
+    const jogo = q("#op-jogo").value;
+    if (jogo && !q("#op-joguei").checked) return erro("Para opinar sobre um jogo, confirme que você mesmo jogou. Se não jogou, escolha \"O portal\".", "#op-joguei");
     const resumo = q("#op-resumo").checked ? resumoOpinioes().texto : "";
-    return `Vila do Samuca, opinião de adulto\nTipo: ${q("#op-tipo").value}\nJogo: ${q("#op-jogo").value || "vila em geral"}\n\n${t}${resumo ? `\n\nResumo das crianças (sem nomes):\n${resumo}` : ""}`;
+    let pub = "Autorização de publicação: NÃO. Não publicar o depoimento.";
+    if (q("#op-autoriza").checked) {
+      const nome = q("#op-nome").value.trim(), idade = Number(q("#op-idade").value), cidade = q("#op-cidade").value.trim(), uf = q("#op-uf").value;
+      if (!nome) return erro("Para autorizar a publicação, escreva o seu nome.", "#op-nome");
+      if (!Number.isInteger(idade) || idade < 18 || idade > 120) return erro("Escreva a sua idade (de adulto, 18 ou mais).", "#op-idade");
+      if (!cidade) return erro("Escreva a sua cidade.", "#op-cidade");
+      if (!uf) return erro("Escolha a UF.", "#op-uf");
+      pub = `Autorização de publicação: SIM, dada em ${new Date().toLocaleString("pt-BR")}. Pode ser retirada a qualquer momento.\nNome: ${nome}\nIdade: ${idade}\nCidade/UF: ${cidade}/${uf}`;
+    }
+    return `Vila do Samuca, opinião de adulto\nTipo: ${q("#op-tipo").value}\nSobre: ${jogo ? `o jogo ${jogo} (o adulto confirmou que jogou)` : "o portal, a vila em geral"}\n\n${t}${resumo ? `\n\nResumo das crianças (sem nomes):\n${resumo}` : ""}\n\n${pub}`;
   };
   q("#op-copiar").addEventListener("click", async () => {
     const m = montar(); if (!m) return;
@@ -959,6 +988,7 @@ function contexto(jogo, jogadores, extra = {}) {
     fala(tipo) { if (ctx.samuca) S.dizer(ctx.samuca, tipo, a.apelido); },
     registrarSolo(dificuldade, placar, resumo) {
       if (ctx.tutorial) return fimDeFaseGuiada(ctx);
+      guardar(`jogou:${jogo.id}`, Date.now());
       N.atualizar(a.id, jogo.id, dificuldade, placar);
       if (a.id !== "visitante") P.anotarPagina(a.id, jogo.id, resumo || "Resolveu o desafio.");
       conferirLimite(ctx) || talvezSugerirPausa(ctx) || mostrarFim(ctx);
@@ -966,6 +996,7 @@ function contexto(jogo, jogadores, extra = {}) {
     // vencedor: 0, 1 ou null (empate)
     registrarDuelo(vencedor) {
       if (ctx.tutorial) return fimDeFaseGuiada(ctx);
+      guardar(`jogou:${jogo.id}`, Date.now());
       // No diário de cada criança: contra quem jogou e como foi (nunca "perdeu"; "jogou com").
       jogadores.forEach((x, k) => {
         if (x.samuca || x.id === "visitante") return;

@@ -749,6 +749,8 @@ body.vila-calma .mapa-selo { background: #f3dfa2; }
 .opiniao-botao[aria-pressed="true"] { border-color: var(--ouro, #ffc857); background: rgba(255,200,87,.18); font-weight: 800; }
 .opiniao-botao[aria-pressed="true"]::after { content: "\2713"; }
 .opiniao-resumo { padding-left: 18px; }
+.opiniao-pub { margin: 10px 0; padding: 10px; border: 1px solid rgba(255,255,255,.3); border-radius: 12px; }
+.opiniao-pub legend { padding: 0 6px; font-weight: 800; }
 .opiniao-check { display: flex; gap: 8px; align-items: flex-start; margin: 8px 0; }
 .fim-sabia { color: var(--apagado); display: flex; gap: 8px; align-items: flex-start; }
 .fim-sabia b { color: #fff; }
