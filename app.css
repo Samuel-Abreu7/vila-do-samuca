@@ -740,6 +740,16 @@ body.vila-calma .cartao-jogo.sugerido { box-shadow: 0 5px 0 var(--sombra), inset
 body.vila-calma .mapa-selo { background: #f3dfa2; }
 
 /* ---------- Fim de partida: "Você sabia?" (01/10/2026) ---------- */
+.fim-opiniao { margin: 12px 0; padding: 10px; border: 1px dashed rgba(255,255,255,.35); border-radius: 14px; }
+.fim-opiniao-titulo { margin: 4px 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.fim-opiniao-titulo small { color: var(--apagado); }
+.opiniao-linha { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+.opiniao-botao { flex: 1 1 90px; min-height: 48px; display: inline-flex; gap: 6px; align-items: center; justify-content: center;
+  padding: 6px 10px; border-radius: 12px; border: 2px solid rgba(255,255,255,.35); background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.opiniao-botao[aria-pressed="true"] { border-color: var(--ouro, #ffc857); background: rgba(255,200,87,.18); font-weight: 800; }
+.opiniao-botao[aria-pressed="true"]::after { content: "\2713"; }
+.opiniao-resumo { padding-left: 18px; }
+.opiniao-check { display: flex; gap: 8px; align-items: flex-start; margin: 8px 0; }
 .fim-sabia { color: var(--apagado); display: flex; gap: 8px; align-items: flex-start; }
 .fim-sabia b { color: #fff; }
 

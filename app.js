@@ -451,6 +451,8 @@ const CUIDADOS = [
   { icone: "lupa", titulo: "Privacidade das crianças", itens: [
     "Só apelido inventado, personagem desenhado e idade. Nada de nome real, foto ou dado que identifique a criança.",
     "Cada criança entra com um segredo (figuras ou números), guardado embaralhado.",
+    "No fim de uma partida, a criança pode, se quiser, tocar numa carinha (gostei, mais ou menos, não gostei) e em como achou a dificuldade. É só escolher, sem escrever nada, e quem vê é só o adulto, no Painel da família. Não muda o nível dela nem dá prêmio.",
+    "Você, adulto, pode mandar a sua própria opinião mais abaixo nesta página. O portal não guarda o que você escreve: você compartilha ou copia o texto e manda para a pessoa da família que cuida do portal.",
     "Tudo fica guardado só neste celular. Antes de qualquer nuvem, a família faz uma revisão de proteção de dados (LGPD).",
   ] },
   { icone: "dupla", titulo: "Para todas as idades e jeitos de aprender", itens: [
@@ -489,6 +491,57 @@ const CUIDADOS = [
   ] },
 ];
 
+// Opinião dos adultos (diferente da das crianças: texto livre, escrito por um adulto e mandado por ele). O portal não
+// tem servidor nem guarda nada disso: o texto é montado aqui e o adulto o compartilha ou copia, sem endereço embutido.
+function resumoOpinioes() {
+  const cs = P.criancas();
+  const linhas = JOGOS.filter((g) => g.pronto).map((g) => {
+    const todas = cs.map((c) => P.opinioes(c.id)[g.id]).filter(Boolean);
+    if (!todas.length) return null;
+    const n = (campo, v) => todas.filter((o) => o[campo] === v).length;
+    return `${g.nome}: ${n("gosto", "gostei")} gostei, ${n("gosto", "meio")} mais ou menos, ${n("gosto", "nao")} não gostei; dificuldade: ${n("nivel", "facil")} fácil, ${n("nivel", "certo")} no ponto certo, ${n("nivel", "dificil")} difícil`;
+  }).filter(Boolean);
+  return {
+    texto: linhas.join("\n"),
+    html: linhas.length ? `<ul class="opiniao-resumo">${linhas.map((l) => `<li>${esc(l)}</li>`).join("")}</ul>` : `<p class="vazio">Ainda ninguém respondeu.</p>`,
+  };
+}
+function formularioPais() {
+  const jogos = JOGOS.filter((g) => g.pronto);
+  return `<section class="cuidados-bloco" id="opiniao">
+    <h2>Sua opinião, pai, mãe, avó ou avô</h2>
+    <p>Conte o que achou: um elogio, um problema, uma ideia. <b>Não escreva nome, foto ou dado de criança.</b>
+    O portal não guarda nada do que você escrever: o texto fica só neste aparelho até você compartilhar ou copiar e mandar para a pessoa da família que cuida do portal.</p>
+    <label class="rotulo" for="op-tipo">Sobre o quê?</label>
+    <select id="op-tipo" class="campo"><option>Elogio</option><option>Problema</option><option>Ideia</option><option>Dúvida</option></select>
+    <label class="rotulo" for="op-jogo">Qual jogo? (opcional)</label>
+    <select id="op-jogo" class="campo"><option value="">Todos / a vila em geral</option>${jogos.map((g) => `<option>${g.nome}</option>`).join("")}</select>
+    <label class="rotulo" for="op-texto">Sua mensagem</label>
+    <textarea id="op-texto" class="campo" rows="5" maxlength="1500" placeholder="Escreva aqui"></textarea>
+    <label class="opiniao-check"><input type="checkbox" id="op-resumo"> Incluir o resumo do que as crianças deste celular acharam dos jogos (sem nomes)</label>
+    <div class="acoes"><button type="button" class="botao principal" id="op-enviar">Compartilhar</button><button type="button" class="botao" id="op-copiar">Copiar</button></div>
+    <p class="nota" id="op-msg" role="status"></p></section>`;
+}
+function ligarFormularioPais() {
+  const q = (s) => palco.querySelector(s);
+  const montar = () => {
+    const t = q("#op-texto").value.trim();
+    if (!t) { q("#op-msg").textContent = "Escreva a mensagem primeiro."; q("#op-texto").focus(); return null; }
+    const resumo = q("#op-resumo").checked ? resumoOpinioes().texto : "";
+    return `Vila do Samuca, opinião de adulto\nTipo: ${q("#op-tipo").value}\nJogo: ${q("#op-jogo").value || "vila em geral"}\n\n${t}${resumo ? `\n\nResumo das crianças (sem nomes):\n${resumo}` : ""}`;
+  };
+  q("#op-copiar").addEventListener("click", async () => {
+    const m = montar(); if (!m) return;
+    try { await navigator.clipboard.writeText(m); q("#op-msg").textContent = "Copiado. Cole numa conversa com a pessoa da família que cuida do portal."; }
+    catch { q("#op-msg").textContent = "Não consegui copiar. Selecione o texto da mensagem e copie."; }
+  });
+  q("#op-enviar").addEventListener("click", async () => {
+    const m = montar(); if (!m) return;
+    if (!navigator.share) { q("#op-copiar").click(); return; }
+    try { await navigator.share({ title: "Vila do Samuca: opinião", text: m }); q("#op-msg").textContent = "Pronto. Obrigado!"; } catch {}
+  });
+}
+
 function telaCuidados() {
   palco.innerHTML = `
     <section class="jg cuidados">
@@ -503,8 +556,10 @@ function telaCuidados() {
           <ul>${b.itens.map((t) => `<li>${t}</li>`).join("")}</ul>
         </section>`).join("")}
       <p class="cuidados-intro">Os ajustes ficam no <a href="#/painel">Painel da família</a>, protegido pela senha da família.</p>
+      ${formularioPais()}
       <a class="botao" href="#/">Voltar para a vila</a>
     </section>`;
+  ligarFormularioPais();
   const intro = palco.querySelector(".cuidados-intro");
   intro.append(botaoOuvir(() => palco.querySelector(".cuidados").innerText.replace(/Voltar para a vila/g, ""), "Ouvir a página"));
 }
@@ -754,6 +809,38 @@ function telaDormindo() {
 // ---------------------------------------------------------------- Fim de partida
 // Um ponto de parada claro: duas opções do mesmo tamanho e uma ideia para brincar fora da tela.
 // Nada começa sozinho. Só aparece se o limite do dia e a pausa sugerida não tiverem falado antes.
+// Opinião da criança sobre o jogo: opcional, só escolhas (nada de texto livre, para ela não escrever nome nem dado),
+// nunca trava o "Jogar de novo", não muda o nível nem dá prêmio, e só os adultos veem o resumo no painel.
+const CARINHAS = {
+  gostei: `<circle cx="12" cy="12" r="10"/><path d="M7.5 14c1 2.2 2.6 3.2 4.5 3.2s3.5-1 4.5-3.2"/><circle cx="8.6" cy="9.5" r=".9"/><circle cx="15.4" cy="9.5" r=".9"/>`,
+  meio: `<circle cx="12" cy="12" r="10"/><path d="M8 15.5h8"/><circle cx="8.6" cy="9.5" r=".9"/><circle cx="15.4" cy="9.5" r=".9"/>`,
+  nao: `<circle cx="12" cy="12" r="10"/><path d="M8 16c1-1.2 2.4-1.8 4-1.8s3 .6 4 1.8"/><circle cx="8.6" cy="9.5" r=".9"/><circle cx="15.4" cy="9.5" r=".9"/>`,
+};
+const ROTULO_GOSTO = { gostei: "Gostei", meio: "Mais ou menos", nao: "Não gostei" };
+const ROTULO_NIVEL = { facil: "Fácil", certo: "No ponto certo", dificil: "Difícil" };
+function blocoOpiniao(id, jogo) {
+  const atual = P.opinioes(id)[jogo] || {};
+  const botao = (campo, v, rotulo, desenho) => `<button type="button" class="opiniao-botao" data-campo="${campo}" data-v="${v}" aria-pressed="${atual[campo] === v}">
+    ${desenho ? `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">${desenho}</svg>` : ""}<span>${rotulo}</span></button>`;
+  return `<div class="fim-opiniao" role="group" aria-label="Sua opinião sobre este jogo">
+    <p class="fim-opiniao-titulo"><b>Como foi este jogo?</b> <small>Se quiser, toque. Só os adultos da família veem.</small></p>
+    <div class="opiniao-linha">${P.GOSTOS.map((v) => botao("gosto", v, ROTULO_GOSTO[v], CARINHAS[v])).join("")}</div>
+    <p class="fim-opiniao-titulo"><b>E a dificuldade?</b></p>
+    <div class="opiniao-linha">${P.NIVEIS.map((v) => botao("nivel", v, ROTULO_NIVEL[v])).join("")}</div>
+    <p class="nota" role="status" data-opiniao-msg></p></div>`;
+}
+function ligarOpiniao(cartao, id, jogo) {
+  const caixa = cartao.querySelector(".fim-opiniao");
+  if (!caixa) return;
+  caixa.querySelector(".fim-opiniao-titulo").append(botaoOuvir(() => "Como foi este jogo? Gostei, mais ou menos, ou não gostei. E a dificuldade? Fácil, no ponto certo ou difícil. Se quiser, toque. Só os adultos da família veem.", "Ouvir"));
+  caixa.querySelectorAll(".opiniao-botao").forEach((b) => b.addEventListener("click", () => {
+    som("toque");
+    P.opinar(id, jogo, b.dataset.campo, b.dataset.v);
+    caixa.querySelectorAll(`[data-campo="${b.dataset.campo}"]`).forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    caixa.querySelector("[data-opiniao-msg]").textContent = "Obrigado! O Samuca anotou.";
+  }));
+}
+
 function mostrarFim(ctx) {
   setTimeout(() => {
     if (!ctx.samuca?.isConnected || palco.querySelector(".pausa-card, .fim-card")) return;
@@ -769,7 +856,8 @@ function mostrarFim(ctx) {
       ${proximo ? `<a class="botao" href="#/jogo/${proximo.id}">${arte(proximo.arte, 28)} ${jogo.proximoConvite}</a>` : ""}
       ${ctx.replay ? `<button type="button" class="botao dourado" data-mostrar>Mostrar como eu fiz</button>` : ""}
       <div class="acoes"><button type="button" class="botao principal" data-denovo>Jogar de novo</button>
-      <a class="botao" href="#/">Voltar para a vila</a></div>`;
+      <a class="botao" href="#/">Voltar para a vila</a></div>
+      ${P.crianca(P.ativaId()) ? blocoOpiniao(P.ativaId(), ctx.jogo) : ""}`;
     cartao.querySelector("[data-denovo]").addEventListener("click", () => { som("solta"); ctx.reiniciar(); });
     cartao.querySelector("[data-mostrar]")?.addEventListener("click", async (e) => {
       const botao = e.currentTarget; // depois do await, e.currentTarget já não existe
@@ -782,6 +870,7 @@ function mostrarFim(ctx) {
     sabia?.append(botaoOuvir(() => "Você sabia? " + sabia.querySelector("span").textContent, "Ouvir"));
     const fora = cartao.querySelector(".fim-fora");
     fora?.append(botaoOuvir(() => "Brinque fora da tela. " + fora.querySelector("span").textContent, "Ouvir"));
+    ligarOpiniao(cartao, P.ativaId(), ctx.jogo);
     ctx.samuca.after(cartao);
     cartao.querySelector(".botao")?.focus({ preventScroll: true }); // teclado e leitor de tela seguem para o cartão
   }, 1800);
@@ -1048,6 +1137,11 @@ function telaPainel() {
       <div class="painel-bloco"><span class="rotulo">Modo leve neste celular</span><div id="modo-leve"></div>
         <p class="nota">Desliga transições, confete e sombras para celulares antigos. "Automático" liga sozinho em aparelho fraco.</p></div>
       <div id="criancas" class="painel-lista"></div>
+      <details class="regras"><summary>O que as crianças acharam dos jogos</summary>
+        <div id="opinioes">${resumoOpinioes().html}</div>
+        <p class="nota">Cada criança responde, se quiser, no fim da partida, só escolhendo (sem escrever). Isso fica só neste celular e não muda o nível dela.
+        Para mandar a sua opinião, ou este resumo sem nomes, use a página <a href="#/cuidados">Para pais e avós</a>.</p>
+      </details>
       <details class="regras"><summary>Cópia de segurança</summary>
         <p class="nota">Copie este texto e guarde. Para restaurar, cole-o de volta e toque em Restaurar.</p>
         <textarea id="backup" class="campo" rows="5"></textarea>

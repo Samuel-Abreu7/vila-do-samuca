@@ -125,6 +125,19 @@ export function gravarCarimbos(id, jogo, carimbos) {
   salvar();
 }
 
+// ---------- Opinião da criança sobre cada jogo (só no aparelho; sem texto livre, só escolhas) ----------
+// gosto: "gostei" | "meio" | "nao"; nivel: "facil" | "certo" | "dificil". A última resposta vale.
+export const GOSTOS = ["gostei", "meio", "nao"];
+export const NIVEIS = ["facil", "certo", "dificil"];
+export const opinioes = (id) => crianca(id)?.opinioes || {};
+export function opinar(id, jogo, campo, valor) {
+  const c = crianca(id);
+  if (!c || !(campo === "gosto" ? GOSTOS : NIVEIS).includes(valor)) return;
+  c.opinioes ??= {};
+  c.opinioes[jogo] = { ...(c.opinioes[jogo] || {}), [campo]: valor, quando: Date.now() };
+  salvar();
+}
+
 // ---------- Preferências de cada criança (som, música, vibração, animações, contraste, letra fácil, vila calma) ----------
 export const PREFERENCIAS_PADRAO = { som: true, musica: true, vibrar: true, lento: false, contraste: false, letra: false, calma: false };
 export function preferencias(id) {
