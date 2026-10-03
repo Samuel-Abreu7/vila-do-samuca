@@ -571,6 +571,21 @@ function ligarFormularioPais() {
   });
 }
 
+// Depoimentos autorizados, de todos os tipos (elogio, ideia, problema, dúvida), na ordem em que chegaram.
+// Só entra o que tem a data da autorização e idade de adulto. Sem nenhum, a seção nem aparece.
+async function mostrarDepoimentos() {
+  let lista = [];
+  try { ({ DEPOIMENTOS: lista } = await import("./depoimentos.js")); } catch {}
+  const caixa = palco.querySelector("#depoimentos");
+  const ok = lista.filter((d) => d && d.autorizadoEm && Number(d.idade) >= 18 && d.texto && d.nome && d.cidade && d.uf);
+  if (!caixa || !ok.length) return;
+  caixa.innerHTML = `<section class="cuidados-bloco"><h2>O que os adultos da família contaram</h2>
+    <p class="nota">Publicados com autorização de quem escreveu, na ordem em que chegaram, com os elogios, as ideias e os problemas. Cada pessoa pode pedir a retirada a qualquer momento.</p>
+    ${ok.map((d) => `<blockquote class="depoimento"><p><b>${esc(d.tipo || "Opinião")}${d.jogo ? ` · ${esc(d.jogo)}` : " · o portal"}</b></p>
+      <p>${esc(d.texto)}</p><footer>${esc(d.nome)}, ${Number(d.idade)} anos, ${esc(d.cidade)}/${esc(d.uf)}</footer>
+      ${d.resposta ? `<p class="depoimento-resposta"><b>O que fizemos:</b> ${esc(d.resposta)}</p>` : ""}</blockquote>`).join("")}</section>`;
+}
+
 function telaCuidados() {
   palco.innerHTML = `
     <section class="jg cuidados">
@@ -585,10 +600,12 @@ function telaCuidados() {
           <ul>${b.itens.map((t) => `<li>${t}</li>`).join("")}</ul>
         </section>`).join("")}
       <p class="cuidados-intro">Os ajustes ficam no <a href="#/painel">Painel da família</a>, protegido pela senha da família.</p>
+      <div id="depoimentos"></div>
       ${formularioPais()}
       <a class="botao" href="#/">Voltar para a vila</a>
     </section>`;
   ligarFormularioPais();
+  mostrarDepoimentos();
   const intro = palco.querySelector(".cuidados-intro");
   intro.append(botaoOuvir(() => palco.querySelector(".cuidados").innerText.replace(/Voltar para a vila/g, ""), "Ouvir a página"));
 }
