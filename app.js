@@ -425,7 +425,7 @@ function inicio() {
 const CUIDADOS = [
   { icone: "casa", titulo: "Feito para pensar, não para prender", itens: [
     "Quem joga nunca paga nada. Os jogos não têm anúncios, não têm compras e não pedem dinheiro, e nada é vendido para as crianças.",
-    "Para ajudar a pagar o portal vai existir uma página só para adultos, a Lojinha da Vila. Ela só aparece depois que um adulto entra com a senha da família, some quando uma criança escolhe o seu personagem e nunca aparece dentro de um jogo ou no mapa. Hoje ela ainda não tem nenhum produto nem link.",
+    "Existe uma página só para adultos, a Lojinha da Vila, pensada para ajudar a pagar o portal. Ela só aparece depois que um adulto entra com a senha da família, some quando uma criança escolhe o seu personagem e nunca aparece dentro de um jogo ou no mapa. Hoje ela não tem nenhum produto nem link, e o portal não faz nenhuma venda nem cobrança.",
     "Sem moedas, baús, prêmios sorteados ou sequência de dias seguidos. Nada que faça a criança voltar por obrigação.",
     "Sem notificações. O portal nunca chama a criança.",
     "Sem ranking e sem comparar uma criança com outra: o nível de cada um nunca aparece na tela.",
@@ -451,9 +451,14 @@ const CUIDADOS = [
   { icone: "lupa", titulo: "Privacidade das crianças", itens: [
     "Só apelido inventado, personagem desenhado e idade. Nada de nome real, foto ou dado que identifique a criança.",
     "Cada criança entra com um segredo (figuras ou números), guardado embaralhado.",
-    "No fim de uma partida, a criança pode, se quiser, tocar numa carinha (gostei, mais ou menos, não gostei) e em como achou a dificuldade. É só escolher, sem escrever nada, e quem vê é só o adulto, no Painel da família. Não muda o nível dela nem dá prêmio.",
-    "Você, adulto, pode mandar a sua própria opinião mais abaixo nesta página: sobre o portal, ou sobre um jogo que você mesmo jogou. O portal não guarda o que você escreve: você compartilha ou copia o texto e manda para a pessoa da família que cuida do portal. Se quiser, pode autorizar a publicação do seu depoimento com nome, idade, cidade e UF; sem a autorização, nada disso é enviado.",
+    "A criança não escreve nada para ninguém: não há conversa, mensagem ou campo de texto para ela.",
     "Tudo fica guardado só neste celular. Antes de qualquer nuvem, a família faz uma revisão de proteção de dados (LGPD).",
+  ] },
+  { icone: "lista", titulo: "A opinião de quem joga e de quem cuida", itens: [
+    "No fim de uma partida, a criança pode, se quiser, tocar numa carinha (gostei, mais ou menos, não gostei) e dizer se achou fácil, no ponto certo ou difícil. É só escolher, sem escrever nada. Não muda o nível dela, não dá prêmio e não atrapalha o \"Jogar de novo\".",
+    "Essas respostas ficam só neste celular, e só o adulto vê o resumo, no Painel da família, sem comparar uma criança com outra.",
+    "Você, adulto, pode mandar a sua opinião no fim desta página: sobre o portal ou sobre um jogo que você mesmo jogou neste celular. O portal não guarda o que você escreve: você compartilha ou copia e manda para a pessoa da família que cuida do portal.",
+    "Se quiser, você autoriza a publicação do seu depoimento com o seu nome, idade, cidade e UF. Sem autorização, nada disso é pedido. Os depoimentos autorizados entram todos, com os elogios, as ideias e os problemas, e você pode pedir a retirada quando quiser.",
   ] },
   { icone: "dupla", titulo: "Para todas as idades e jeitos de aprender", itens: [
     "Feito para crianças de 5 a 15 anos, e para quem ainda não lê: todo texto importante tem o botão Ouvir.",

@@ -275,6 +275,10 @@ a.botao { text-decoration: none; }
 }
 .campo:focus { border-color: var(--ouro); outline: none; }
 textarea.campo { font: 600 .8rem/1.4 ui-monospace, Consolas, monospace; resize: vertical; }
+/* Formulário da página dos pais: texto de gente, não de cópia de segurança */
+#opiniao .campo { font: 600 1rem/1.45 var(--fonte); }
+#opiniao textarea.campo { min-height: 120px; }
+#opiniao select.campo { appearance: auto; }
 .painel-lista { display: grid; gap: 14px; }
 .painel-crianca { display: grid; gap: 10px; padding: 14px; border-radius: 18px; background: var(--cartao); box-shadow: 0 5px 0 var(--sombra); }
 .painel-topo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -754,7 +758,8 @@ body.vila-calma .mapa-selo { background: #f3dfa2; }
 .depoimento-resposta { margin-top: 6px; }
 .opiniao-pub { margin: 10px 0; padding: 10px; border: 1px solid rgba(255,255,255,.3); border-radius: 12px; }
 .opiniao-pub legend { padding: 0 6px; font-weight: 800; }
-.opiniao-check { display: flex; gap: 8px; align-items: flex-start; margin: 8px 0; }
+.opiniao-check { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0; min-height: 44px; cursor: pointer; }
+.opiniao-check input { flex: none; width: 26px; height: 26px; margin: 0; accent-color: var(--ouro); }
 .fim-sabia { color: var(--apagado); display: flex; gap: 8px; align-items: flex-start; }
 .fim-sabia b { color: #fff; }
 
