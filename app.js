@@ -615,6 +615,16 @@ function telaCuidados() {
   intro.append(botaoOuvir(() => palco.querySelector(".cuidados").innerText.replace(/Voltar para a vila/g, ""), "Ouvir a página"));
 }
 
+// ---------------------------------------------------------------- Círculos (DESLIGADOS)
+// A tela do administrador mora em circulos-tela.js, que NÃO está na lista do site: enquanto os círculos não forem
+// liberados, o arquivo não existe no ar e o endereço "#/circulo" só leva de volta à vila. Nenhum botão leva até ele.
+async function abrirCirculos() {
+  let tela = null;
+  try { tela = await import("./circulos-tela.js"); } catch {}
+  if (!tela) { location.hash = "#/"; return; }
+  return tela.telaCirculo(palco, { esc, icone, avatar, botaoOuvir });
+}
+
 // ---------------------------------------------------------------- Lojinha da Vila (só para adultos)
 // Regras do dono (02 e 03/10/2026): o portal nunca cobra acesso nem vende nada a quem joga. A vitrine mora num SITE
 // PRÓPRIO PARA ADULTOS (pasta lojinha-site/ da oficina), separado do portal, porque os programas de afiliados recusam
@@ -1278,6 +1288,7 @@ function rota() {
     if (h.startsWith("#/painel")) return telaPainel();
     if (h.startsWith("#/cuidados")) return telaCuidados();
     if (h.startsWith("#/lojinha")) return telaLojinha();
+    if (h.startsWith("#/circulo")) return abrirCirculos();
     if (h.startsWith("#/novo")) return novoLiberado ? telaNovo() : telaSenhaNovo();
     if (!jogadorAtivo()) { voltar.hidden = true; return telaEntrar(); }
     if (h.startsWith("#/dormindo") || esgotado(P.ativaId())) { voltar.hidden = true; return telaDormindo(); }
